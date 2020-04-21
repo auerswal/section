@@ -1,0 +1,10 @@
+This is an implementation of a "section" filter in Go.
+
+The section filter can be used to extract an indented section of text
+starting with a line that matches a regular expression.  The matching
+line(s) and any indented section under the matching line are printed.
+
+This can be helpful when working with, e.g., Python code, YAML data,
+or Free Range Routing (FRR) configuration files.
+
+Use "section --help" for basic usage information and option description.

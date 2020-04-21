@@ -1,0 +1,171 @@
+/*
+   section - print sections of a text file matching a pattern
+   Copyright (C) 2019-2020  Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+// section - print indented sections of a text file matching a pattern
+package main
+
+import (
+	"bufio"
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"regexp"
+)
+
+const (
+	PROG    = "section"
+	VERSION = "0.0.1"
+)
+
+// print short usage information
+func usage(w io.Writer) {
+	fmt.Fprintf(w, "Usage: %s [OPTION...] PATTERN [FILE...]\n", PROG)
+}
+
+// XXX: use dedicated error logger instead?
+func usage_err(err error) {
+	log.SetPrefix(PROG + ": error: ")
+	log.Print(err)
+	usage(os.Stderr)
+	fmt.Fprintf(os.Stderr, "Try '%s -help' for more information\n", PROG)
+	os.Exit(1)
+}
+
+// print help
+func help() {
+	version()
+	fmt.Println("")
+	fmt.Println(PROG + " prints indented text sections matching a pattern")
+	usage(os.Stdout)
+	fmt.Println("Options:")
+	flag.CommandLine.SetOutput(os.Stdout)
+	flag.PrintDefaults()
+}
+
+// print version and copyright information
+func version() {
+	fmt.Println(PROG + " version " + VERSION)
+	fmt.Println("Copyright (C) 2019-2020 Erik Auerswald <auerswal@unix-ag.uni-kl.de>")
+	fmt.Println("License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.")
+	fmt.Println("This is free software: you are free to change and redistribute it.")
+	fmt.Println("There is NO WARRANTY, to the extent permitted by law.")
+}
+
+// read input text and write matching sections to output
+func section(ind *regexp.Regexp, pat *regexp.Regexp, r io.Reader) {
+	in_sect := false
+	s_ind := 0
+	c_ind := 0
+	s := bufio.NewScanner(r)
+	for s.Scan() {
+		l := s.Bytes()
+		c_ind = len(ind.Find(l))
+		if pat.Match(l) || (in_sect && c_ind > s_ind) {
+			if !in_sect || c_ind < s_ind {
+				s_ind = c_ind
+			}
+			in_sect = true
+			_, err := os.Stdout.Write(l)
+			if err != nil {
+				log.Print(err)
+				return
+			}
+			_, err = os.Stdout.WriteString("\n")
+			if err != nil {
+				log.Print(err)
+				return
+			}
+		} else {
+			in_sect = false
+			s_ind = 0
+		}
+	}
+	if s.Err() != nil {
+		log.Print(s.Err())
+	}
+}
+
+func main() {
+	// XXX: use dedicated error logger instead (go doc log.New)?
+	log.SetPrefix(PROG + ": ")
+	log.SetFlags(0)
+
+	// define command line flags
+	flag.Usage = func() { usage_err(errors.New("unknown option")) }
+	var print_help bool
+	flag.BoolVar(&print_help, "help", false, "display help text and exit")
+	flag.BoolVar(&print_help, "h", false, "display help text and exit")
+	var print_version bool
+	flag.BoolVar(&print_version, "version", false, "display version and exit")
+	flag.BoolVar(&print_version, "V", false, "display version and exit")
+	var ignore_case bool
+	flag.BoolVar(&ignore_case, "ignore-case", false, "ignore case distinctions")
+	flag.BoolVar(&ignore_case, "i", false, "ignore case distinctions")
+	var yaml_ind bool
+	flag.BoolVar(&yaml_ind, "yaml", false, "allow YAML list indentation")
+	// parse command line flags
+	flag.Parse()
+
+	// act on given command line flags
+	if print_help {
+		help()
+		os.Exit(0)
+	}
+	if print_version {
+		version()
+		os.Exit(0)
+	}
+	// required pattern to match on is given as command line argument
+	if flag.NArg() < 1 {
+		usage_err(errors.New("PATTERN is missing"))
+	}
+	pat_str := flag.Arg(0)
+	// adjust pattern according to command line flags
+	if ignore_case {
+		pat_str = `(?i)` + pat_str
+	}
+	pat_re, err := regexp.Compile(pat_str)
+	if err != nil {
+		usage_err(err)
+	}
+	// adjust indentation pattern according to command line flags
+	ind_str := `^[ \t]*`
+	if yaml_ind {
+		ind_str += `(- )?`
+	}
+	ind_re := regexp.MustCompile(ind_str)
+
+	// operate on STDIN if no file name is provided,
+	// otherwise operate on the given files
+	if flag.NArg() == 1 {
+		section(ind_re, pat_re, os.Stdin)
+	} else {
+		for _, arg := range flag.Args()[1:] {
+			f, err := os.Open(arg)
+			if err != nil {
+				log.Print(err)
+				continue
+			}
+			section(ind_re, pat_re, f)
+			f.Close()
+		}
+	}
+}
