@@ -32,7 +32,23 @@ import (
 
 const (
 	PROG    = "section"
-	VERSION = "0.0.1"
+	VERSION = "0.0.2"
+)
+
+// flags
+var (
+	ignore_case   bool
+	print_help    bool
+	print_version bool
+	yaml_ind      bool
+	err           error
+)
+
+// regular expressions
+var (
+	ind_re      = regexp.MustCompile(`^[ \t]*`)
+	yaml_ind_re = regexp.MustCompile(`^[ \t]*- `)
+	pat_re      *regexp.Regexp
 )
 
 // print short usage information
@@ -70,15 +86,19 @@ func version() {
 }
 
 // read input text and write matching sections to output
-func section(ind *regexp.Regexp, pat *regexp.Regexp, r io.Reader) {
+func section(r io.Reader) {
 	in_sect := false
 	s_ind := 0
 	c_ind := 0
+	c_y_ind := 0
 	s := bufio.NewScanner(r)
 	for s.Scan() {
 		l := s.Bytes()
-		c_ind = len(ind.Find(l))
-		if pat.Match(l) || (in_sect && c_ind > s_ind) {
+		c_ind = len(ind_re.Find(l))
+		if yaml_ind {
+			c_y_ind = len(yaml_ind_re.Find(l))
+		}
+		if pat_re.Match(l) || (in_sect && (c_ind > s_ind || c_y_ind > s_ind)) {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
 			}
@@ -110,16 +130,12 @@ func main() {
 
 	// define command line flags
 	flag.Usage = func() { usage_err(errors.New("unknown option")) }
-	var print_help bool
 	flag.BoolVar(&print_help, "help", false, "display help text and exit")
 	flag.BoolVar(&print_help, "h", false, "display help text and exit")
-	var print_version bool
 	flag.BoolVar(&print_version, "version", false, "display version and exit")
 	flag.BoolVar(&print_version, "V", false, "display version and exit")
-	var ignore_case bool
 	flag.BoolVar(&ignore_case, "ignore-case", false, "ignore case distinctions")
 	flag.BoolVar(&ignore_case, "i", false, "ignore case distinctions")
-	var yaml_ind bool
 	flag.BoolVar(&yaml_ind, "yaml", false, "allow YAML list indentation")
 	// parse command line flags
 	flag.Parse()
@@ -142,21 +158,15 @@ func main() {
 	if ignore_case {
 		pat_str = `(?i)` + pat_str
 	}
-	pat_re, err := regexp.Compile(pat_str)
+	pat_re, err = regexp.Compile(pat_str)
 	if err != nil {
 		usage_err(err)
 	}
-	// adjust indentation pattern according to command line flags
-	ind_str := `^[ \t]*`
-	if yaml_ind {
-		ind_str += `(- )?`
-	}
-	ind_re := regexp.MustCompile(ind_str)
 
 	// operate on STDIN if no file name is provided,
 	// otherwise operate on the given files
 	if flag.NArg() == 1 {
-		section(ind_re, pat_re, os.Stdin)
+		section(os.Stdin)
 	} else {
 		for _, arg := range flag.Args()[1:] {
 			f, err := os.Open(arg)
@@ -164,7 +174,7 @@ func main() {
 				log.Print(err)
 				continue
 			}
-			section(ind_re, pat_re, f)
+			section(f)
 			f.Close()
 		}
 	}
