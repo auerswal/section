@@ -31,8 +31,9 @@ import (
 )
 
 const (
-	PROG    = "section"
-	VERSION = "0.0.2"
+	PROG                   = "section"
+	VERSION                = "0.0.3"
+	ARBITRARY_BUFFER_LIMIT = 512 * 1024 * 1024 // 500MiB
 )
 
 // flags
@@ -92,13 +93,16 @@ func section(r io.Reader) {
 	c_ind := 0
 	c_y_ind := 0
 	s := bufio.NewScanner(r)
+	var buf []byte
+	s.Buffer(buf, ARBITRARY_BUFFER_LIMIT)
 	for s.Scan() {
 		l := s.Bytes()
 		c_ind = len(ind_re.Find(l))
 		if yaml_ind {
 			c_y_ind = len(yaml_ind_re.Find(l))
 		}
-		if pat_re.Match(l) || (in_sect && (c_ind > s_ind || c_y_ind > s_ind)) {
+		if pat_re.Match(l) ||
+			(in_sect && (c_ind > s_ind || c_y_ind > s_ind)) {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
 			}
