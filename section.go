@@ -32,7 +32,7 @@ import (
 
 const (
 	PROG                   = "section"
-	VERSION                = "0.0.3"
+	VERSION                = "0.0.4"
 	ARBITRARY_BUFFER_LIMIT = 512 * 1024 * 1024 // 500MiB
 )
 
@@ -63,7 +63,7 @@ func usage_err(err error) {
 	log.Print(err)
 	usage(os.Stderr)
 	fmt.Fprintf(os.Stderr, "Try '%s -help' for more information\n", PROG)
-	os.Exit(1)
+	os.Exit(2)
 }
 
 // print help
@@ -87,7 +87,9 @@ func version() {
 }
 
 // read input text and write matching sections to output
-func section(r io.Reader) {
+func section(r io.Reader) (matched bool, err error) {
+	matched = false
+	err = nil
 	in_sect := false
 	s_ind := 0
 	c_ind := 0
@@ -107,7 +109,8 @@ func section(r io.Reader) {
 				s_ind = c_ind
 			}
 			in_sect = true
-			_, err := os.Stdout.Write(l)
+			matched = true
+			_, err = os.Stdout.Write(l)
 			if err != nil {
 				log.Print(err)
 				return
@@ -122,9 +125,25 @@ func section(r io.Reader) {
 			s_ind = 0
 		}
 	}
-	if s.Err() != nil {
+	err = s.Err()
+	if err != nil {
 		log.Print(s.Err())
 	}
+	return
+}
+
+// exit code 2 if an error occurred
+// exit code 1 without match nor error
+// exit code 0 on match without error
+func exit_code(cur int, m bool, err error) (ec int) {
+	ec = cur
+	if cur == 1 && m {
+		ec = 0
+	}
+	if err != nil {
+		ec = 2
+	}
+	return
 }
 
 func main() {
@@ -167,10 +186,12 @@ func main() {
 		usage_err(err)
 	}
 
+	ec := 1
 	// operate on STDIN if no file name is provided,
 	// otherwise operate on the given files
 	if flag.NArg() == 1 {
-		section(os.Stdin)
+		m, err := section(os.Stdin)
+		ec = exit_code(ec, m, err)
 	} else {
 		for _, arg := range flag.Args()[1:] {
 			f, err := os.Open(arg)
@@ -178,8 +199,10 @@ func main() {
 				log.Print(err)
 				continue
 			}
-			section(f)
+			m, err := section(f)
+			ec = exit_code(ec, m, err)
 			f.Close()
 		}
 	}
+	os.Exit(ec)
 }
