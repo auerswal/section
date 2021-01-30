@@ -1,6 +1,6 @@
 /*
    section - print sections of a text file matching a pattern
-   Copyright (C) 2019-2020  Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+   Copyright (C) 2019-2021  Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ const (
 	PROG                   = "section"
 	VERSION                = "0.0.4"
 	ARBITRARY_BUFFER_LIMIT = 512 * 1024 * 1024 // 500MiB
-	COPYRIGHT              = `Copyright (C) 2019-2020 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+	COPYRIGHT              = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
