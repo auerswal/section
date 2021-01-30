@@ -108,24 +108,26 @@ func no_output(_ []byte) error {
 
 // read input text and write matching sections to output
 func section(r io.Reader) (matched bool, err error) {
-	matched = false
-	err = nil
-	in_sect := false
-	s_ind := 0
-	c_ind := 0
-	c_y_ind := 0
+	matched = false  // return if something was matched
+	err = nil        // return an error, if one occurs
+	in_sect := false // currently inside a section?
+	s_ind := 0       // indentation depth of current section
 	s := bufio.NewScanner(r)
 	var buf []byte
 	s.Buffer(buf, ARBITRARY_BUFFER_LIMIT)
 	for s.Scan() {
 		l := s.Bytes()
-		c_ind = len(ind_re.Find(l))
+		c_ind := len(ind_re.Find(l))
+		c_y_ind := 0
 		if yaml_ind {
 			c_y_ind = len(yaml_ind_re.Find(l))
 		}
-		if (!invert_match && pat_re.Match(l)) ||
-			(invert_match && !pat_re.Match(l)) ||
-			(in_sect && (c_ind > s_ind || c_y_ind > s_ind)) {
+		pat_match := pat_re.Match(l)
+		if invert_match {
+			pat_match = !pat_match
+		}
+		cont_sect := in_sect && (c_ind > s_ind || c_y_ind > s_ind)
+		if pat_match || cont_sect {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
 			}
