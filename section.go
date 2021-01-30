@@ -34,6 +34,10 @@ const (
 	PROG                   = "section"
 	VERSION                = "0.0.4"
 	ARBITRARY_BUFFER_LIMIT = 512 * 1024 * 1024 // 500MiB
+	COPYRIGHT              = `Copyright (C) 2019-2020 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.`
 )
 
 // flags
@@ -79,11 +83,8 @@ func help() {
 
 // print version and copyright information
 func version() {
-	fmt.Println(PROG + " version " + VERSION)
-	fmt.Println("Copyright (C) 2019-2020 Erik Auerswald <auerswal@unix-ag.uni-kl.de>")
-	fmt.Println("License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.")
-	fmt.Println("This is free software: you are free to change and redistribute it.")
-	fmt.Println("There is NO WARRANTY, to the extent permitted by law.")
+	fmt.Println(PROG, "version", VERSION)
+	fmt.Println(COPYRIGHT)
 }
 
 // read input text and write matching sections to output
