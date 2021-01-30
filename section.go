@@ -32,7 +32,7 @@ import (
 
 const (
 	PROG                   = "section"
-	VERSION                = "0.0.4"
+	VERSION                = "0.0.5"
 	ARBITRARY_BUFFER_LIMIT = 512 * 1024 * 1024 // 500MiB
 	COPYRIGHT              = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
@@ -42,11 +42,15 @@ There is NO WARRANTY, to the extent permitted by law.`
 
 // flags
 var (
-	ignore_case   bool
-	print_help    bool
-	print_version bool
-	yaml_ind      bool
-	err           error
+	ignore_case     bool
+	invert_action   bool
+	invert_match    bool
+	print_help      bool
+	print_version   bool
+	yaml_ind        bool
+	err             error
+	in_sect_action  func([]byte) error
+	out_sect_action func([]byte) error
 )
 
 // regular expressions
@@ -87,6 +91,21 @@ func version() {
 	fmt.Println(COPYRIGHT)
 }
 
+// print the given line to standard output
+func print_line(l []byte) (err error) {
+	_, err = os.Stdout.Write(l)
+	if err != nil {
+		return err
+	}
+	_, err = os.Stdout.WriteString("\n")
+	return err
+}
+
+// do not print the given line
+func no_output(_ []byte) error {
+	return nil
+}
+
 // read input text and write matching sections to output
 func section(r io.Reader) (matched bool, err error) {
 	matched = false
@@ -104,24 +123,25 @@ func section(r io.Reader) (matched bool, err error) {
 		if yaml_ind {
 			c_y_ind = len(yaml_ind_re.Find(l))
 		}
-		if pat_re.Match(l) ||
+		if (!invert_match && pat_re.Match(l)) ||
+			(invert_match && !pat_re.Match(l)) ||
 			(in_sect && (c_ind > s_ind || c_y_ind > s_ind)) {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
 			}
 			in_sect = true
 			matched = true
-			_, err = os.Stdout.Write(l)
-			if err != nil {
-				log.Print(err)
-				return
-			}
-			_, err = os.Stdout.WriteString("\n")
+			err = in_sect_action(l)
 			if err != nil {
 				log.Print(err)
 				return
 			}
 		} else {
+			err = out_sect_action(l)
+			if err != nil {
+				log.Print(err)
+				return
+			}
 			in_sect = false
 			s_ind = 0
 		}
@@ -152,6 +172,10 @@ func main() {
 	log.SetPrefix(PROG + ": ")
 	log.SetFlags(0)
 
+	// initialize actions in- and outside of sections
+	in_sect_action = print_line
+	out_sect_action = no_output
+
 	// define command line flags
 	flag.Usage = func() { usage_err(errors.New("unknown option")) }
 	flag.BoolVar(&print_help, "help", false, "display help text and exit")
@@ -161,6 +185,8 @@ func main() {
 	flag.BoolVar(&ignore_case, "ignore-case", false, "ignore case distinctions")
 	flag.BoolVar(&ignore_case, "i", false, "ignore case distinctions")
 	flag.BoolVar(&yaml_ind, "yaml", false, "allow YAML list indentation")
+	flag.BoolVar(&invert_action, "invert-action", false, "print lines outside matched sections")
+	flag.BoolVar(&invert_match, "invert-match", false, "match sections not starting with PATTERN")
 	// parse command line flags
 	flag.Parse()
 
@@ -172,6 +198,10 @@ func main() {
 	if print_version {
 		version()
 		os.Exit(0)
+	}
+	if invert_action {
+		in_sect_action = no_output
+		out_sect_action = print_line
 	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {
