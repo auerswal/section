@@ -31,10 +31,11 @@ import (
 )
 
 const (
-	PROG                   = "section"
-	VERSION                = "0.0.5"
-	ARBITRARY_BUFFER_LIMIT = 512 * 1024 * 1024 // 500MiB
-	COPYRIGHT              = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+	PROG        = "section"
+	VERSION     = "0.0.5"
+	ARB_BUF_LIM = 512 * 1024 * 1024 // 500MiB
+	DESC        = "prints indented text sections started by matching a pattern."
+	COPYRIGHT   = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
@@ -78,7 +79,7 @@ func usage_err(err error) {
 func help() {
 	version()
 	fmt.Println("")
-	fmt.Println(PROG + " prints indented text sections matching a pattern")
+	fmt.Println(PROG, DESC)
 	usage(os.Stdout)
 	fmt.Println("Options:")
 	flag.CommandLine.SetOutput(os.Stdout)
@@ -114,7 +115,7 @@ func section(r io.Reader) (matched bool, err error) {
 	s_ind := 0       // indentation depth of current section
 	s := bufio.NewScanner(r)
 	var buf []byte
-	s.Buffer(buf, ARBITRARY_BUFFER_LIMIT)
+	s.Buffer(buf, ARB_BUF_LIM)
 	for s.Scan() {
 		l := s.Bytes()
 		c_ind := len(ind_re.Find(l))
@@ -187,7 +188,7 @@ func main() {
 	flag.BoolVar(&ignore_case, "ignore-case", false, "ignore case distinctions")
 	flag.BoolVar(&ignore_case, "i", false, "ignore case distinctions")
 	flag.BoolVar(&yaml_ind, "yaml", false, "allow YAML list indentation")
-	flag.BoolVar(&invert_action, "invert-action", false, "print lines outside matched sections")
+	flag.BoolVar(&invert_action, "invert-action", false, "print all but matched sections")
 	flag.BoolVar(&invert_match, "invert-match", false, "match sections not starting with PATTERN")
 	// parse command line flags
 	flag.Parse()
