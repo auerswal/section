@@ -32,7 +32,7 @@ import (
 
 const (
 	PROG        = "section"
-	VERSION     = "0.0.5"
+	VERSION     = "0.0.6"
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 500MiB
 	DESC        = "prints indented text sections started by matching a pattern."
 	COPYRIGHT   = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
@@ -44,7 +44,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 // flags
 var (
 	ignore_case     bool
-	invert_action   bool
+	omit            bool
 	invert_match    bool
 	print_help      bool
 	print_version   bool
@@ -188,7 +188,7 @@ func main() {
 	flag.BoolVar(&ignore_case, "ignore-case", false, "ignore case distinctions")
 	flag.BoolVar(&ignore_case, "i", false, "ignore case distinctions")
 	flag.BoolVar(&yaml_ind, "yaml", false, "allow YAML list indentation")
-	flag.BoolVar(&invert_action, "invert-action", false, "print all but matched sections")
+	flag.BoolVar(&omit, "omit", false, "print all but matched sections")
 	flag.BoolVar(&invert_match, "invert-match", false, "match sections not starting with PATTERN")
 	// parse command line flags
 	flag.Parse()
@@ -202,7 +202,7 @@ func main() {
 		version()
 		os.Exit(0)
 	}
-	if invert_action {
+	if omit {
 		in_sect_action = no_output
 		out_sect_action = print_line
 	}
