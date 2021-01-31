@@ -188,7 +188,7 @@ func main() {
 	flag.BoolVar(&ignore_case, "ignore-case", false, "ignore case distinctions")
 	flag.BoolVar(&ignore_case, "i", false, "ignore case distinctions")
 	flag.BoolVar(&yaml_ind, "yaml", false, "allow YAML list indentation")
-	flag.BoolVar(&omit, "omit", false, "print all but matched sections")
+	flag.BoolVar(&omit, "omit", false, "omit matched sections, print everything else")
 	flag.BoolVar(&invert_match, "invert-match", false, "match sections not starting with PATTERN")
 	// parse command line flags
 	flag.Parse()
