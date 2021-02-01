@@ -34,7 +34,7 @@ const (
 	PROG        = "section"
 	VERSION     = "0.0.6"
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 500MiB
-	DESC        = "prints indented text sections started by matching a pattern."
+	DESC        = "prints indented text sections started by matching a regular expression."
 	COPYRIGHT   = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
