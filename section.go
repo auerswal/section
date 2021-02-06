@@ -32,7 +32,7 @@ import (
 
 const (
 	PROG        = "section"
-	VERSION     = "0.0.6"
+	VERSION     = "0.0.7"
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 500MiB
 	DESC        = "prints indented text sections started by matching a regular expression."
 	COPYRIGHT   = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
@@ -43,6 +43,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_IGNORE_CASE  = "ignore case distinctions"
 	OD_INVERT_MATCH = "match sections not starting with PATTERN"
 	OD_OMIT         = "omit matched sections, print everything else"
+	OD_QUIET        = "suppress all normal output"
 	OD_YAML_IND     = "allow YAML list indentation"
 	OD_VERSION      = "display version and exit"
 )
@@ -53,6 +54,7 @@ var (
 	ignore_case   bool
 	invert_match  bool
 	omit          bool
+	quiet         bool
 	print_help    bool
 	print_version bool
 	yaml_ind      bool
@@ -198,6 +200,9 @@ func main() {
 	flag.BoolVar(&omit, "omit", false, OD_OMIT)
 	flag.BoolVar(&print_version, "version", false, OD_VERSION)
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
+	flag.BoolVar(&quiet, "quiet", false, OD_QUIET)
+	flag.BoolVar(&quiet, "q", false, OD_QUIET)
+	flag.BoolVar(&quiet, "silent", false, OD_QUIET)
 	flag.BoolVar(&yaml_ind, "yaml", false, OD_YAML_IND)
 	// parse command line flags
 	flag.Parse()
@@ -214,6 +219,10 @@ func main() {
 	if omit {
 		in_sect_action = no_output
 		out_sect_action = print_line
+	}
+	if quiet {
+		in_sect_action = no_output
+		out_sect_action = no_output
 	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {
