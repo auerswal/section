@@ -39,17 +39,26 @@ const (
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
+	OD_HELP         = "display help text and exit"
+	OD_IGNORE_CASE  = "ignore case distinctions"
+	OD_INVERT_MATCH = "match sections not starting with PATTERN"
+	OD_OMIT         = "omit matched sections, print everything else"
+	OD_YAML_IND     = "allow YAML list indentation"
+	OD_VERSION      = "display version and exit"
 )
 
 // flags
 var (
-	ignore_case     bool
-	omit            bool
-	invert_match    bool
-	print_help      bool
-	print_version   bool
-	yaml_ind        bool
-	err             error
+	// options
+	ignore_case   bool
+	invert_match  bool
+	omit          bool
+	print_help    bool
+	print_version bool
+	yaml_ind      bool
+	// enable error handling
+	err error
+	// actions performed by the section algorithm
 	in_sect_action  func([]byte) error
 	out_sect_action func([]byte) error
 )
@@ -181,15 +190,15 @@ func main() {
 
 	// define command line flags
 	flag.Usage = func() { usage_err(errors.New("unknown option")) }
-	flag.BoolVar(&print_help, "help", false, "display help text and exit")
-	flag.BoolVar(&print_help, "h", false, "display help text and exit")
-	flag.BoolVar(&print_version, "version", false, "display version and exit")
-	flag.BoolVar(&print_version, "V", false, "display version and exit")
-	flag.BoolVar(&ignore_case, "ignore-case", false, "ignore case distinctions")
-	flag.BoolVar(&ignore_case, "i", false, "ignore case distinctions")
-	flag.BoolVar(&yaml_ind, "yaml", false, "allow YAML list indentation")
-	flag.BoolVar(&omit, "omit", false, "omit matched sections, print everything else")
-	flag.BoolVar(&invert_match, "invert-match", false, "match sections not starting with PATTERN")
+	flag.BoolVar(&print_help, "help", false, OD_HELP)
+	flag.BoolVar(&print_help, "h", false, OD_HELP)
+	flag.BoolVar(&ignore_case, "ignore-case", false, OD_IGNORE_CASE)
+	flag.BoolVar(&ignore_case, "i", false, OD_IGNORE_CASE)
+	flag.BoolVar(&invert_match, "invert-match", false, OD_INVERT_MATCH)
+	flag.BoolVar(&omit, "omit", false, OD_OMIT)
+	flag.BoolVar(&print_version, "version", false, OD_VERSION)
+	flag.BoolVar(&print_version, "V", false, OD_VERSION)
+	flag.BoolVar(&yaml_ind, "yaml", false, OD_YAML_IND)
 	// parse command line flags
 	flag.Parse()
 
