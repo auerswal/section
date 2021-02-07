@@ -48,7 +48,6 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_VERSION      = "display version and exit"
 )
 
-// flags
 var (
 	// options
 	ignore_case   bool
@@ -63,13 +62,11 @@ var (
 	// actions performed by the section algorithm
 	in_sect_action  func([]byte) error
 	out_sect_action func([]byte) error
-)
-
-// regular expressions
-var (
+	// regular expressions matching indentation
 	ind_re      = regexp.MustCompile(`^[ \t]*`)
 	yaml_ind_re = regexp.MustCompile(`^[ \t]*- `)
-	pat_re      *regexp.Regexp
+	// regular expression matching sections
+	pat_re *regexp.Regexp
 )
 
 // print short usage information
@@ -77,7 +74,7 @@ func usage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s [OPTION...] PATTERN [FILE...]\n", PROG)
 }
 
-// XXX: use dedicated error logger instead?
+// emit an error message
 func usage_err(err error) {
 	log.SetPrefix(PROG + ": error: ")
 	log.Print(err)
@@ -182,7 +179,7 @@ func exit_code(cur int, m bool, err error) (ec int) {
 }
 
 func main() {
-	// XXX: use dedicated error logger instead (go doc log.New)?
+	// error logging
 	log.SetPrefix(PROG + ": ")
 	log.SetFlags(0)
 
