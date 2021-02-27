@@ -1,0 +1,82 @@
+#! /bin/bash
+
+# run_tests.sh - run a set of tests on a Unix filter
+# Copyright (C) 2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+set -u
+
+PROG='run_tests'
+FILTER='../section'
+LOG='tests.log'
+
+test -x "$FILTER" || {
+  printf -- '%s: cannot execute program to test (%s)\n' "$PROG" "$FILTER"
+  exit 1
+}
+
+rm -f -- "$LOG"
+exec > >(tee "$LOG") 2>&1
+
+PASS=0
+FAIL=0
+
+incomplete_test() {
+  printf -- '%s is an incomplete test, some files are missing\n' "$1"
+}
+
+wrong_exit_code() {
+  printf -- '%s: unexpected exit code: expected %d, got %d\n' "$@"
+}
+
+output_differs() {
+  printf -- '%s: unexpected output:\n' "$1"
+  shift
+  diff -u "$@"
+}
+
+for T in *.opts; do
+  NAME=${T%.opts}
+  PAT="${NAME}.pat"
+  IN="${NAME}.in"
+  OUT="${NAME}.out"
+  EXP="${NAME}.exp"
+  EXP_EC=$(cat "${NAME}.ec")
+  test -r "$PAT" && test -r "$IN" && test -r "$EXP" && test -r "${NAME}.ec" || {
+    incomplete_test "$NAME"
+    exit 1
+  }
+  RES=0
+  "$FILTER" $(cat "$T") "$(cat "$PAT")" "$IN" > "$OUT"
+  EC=$?
+  test "$EC" -eq "$EXP_EC" || {
+    wrong_exit_code "$NAME" "$EXP_EC" "$EC"
+    RES=1
+  }
+  cmp >/dev/null 2>&1 "$EXP" "$OUT" || {
+    output_differs "$NAME" "$EXP" "$OUT"
+    RES=1
+  }
+  if test "$RES" = 0; then
+    printf -- '%s: PASS\n' "$NAME"
+  else
+    printf -- '%s: FAIL\n' "$NAME"
+  fi
+done
+
+PASS=$(grep -c 'PASS$' "$LOG")
+FAIL=$(grep -c 'FAIL$' "$LOG")
+printf -- '%d passed and %d failed tests\n' "$PASS" "$FAIL"
+test "$FAIL" -eq 0 && exit 0 || exit 1

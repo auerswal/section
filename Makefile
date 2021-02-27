@@ -15,6 +15,9 @@ all: $(BINARY)
 $(BINARY): $(SOURCE) Makefile
 	$(GC) -o $@ $<
 
+check: $(BINARY)
+	(cd tests; ./run_tests)
+
 install: all $(DOCS)
 	install -d $(DESTDIR)$(BINDIR) $(DESTDIR)$(DOCDIR)
 	install -m 0755 $(BINARY) $(DESTDIR)$(BINDIR)/$(BINARY)
@@ -30,8 +33,9 @@ tar: $(SRCDIR)
 clean:
 	$(RM) $(BINARY)
 	$(RM) -r $(SRCDIR)
+	$(RM) $(wildcard tests/*.out) tests/tests.log
 
 distclean: clean
 	$(RM) $(ARCHIVE)
 
-.PHONY: clean install
+.PHONY: check clean install
