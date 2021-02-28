@@ -1,10 +1,19 @@
-This is an implementation of a "section" filter in Go.
+This is an implementation of the "section" filter in Go.
 
-The section filter can be used to extract an indented section of text
+The section filter can be used to extract indented sections of text
 starting with a line that matches a regular expression.  The matching
-line(s) and any indented section under the matching line are printed.
+line(s) and any indented section(s) under the matching line(s) are
+printed.
+
+The section filter does not attempt to handle indentation with mixed
+space and tab characters.  You can use the widely available expand[1] and
+unexpand[2] filters to ensure uniform indentation for use with section.
 
 This can be helpful when working with, e.g., Python code, YAML data,
 or Free Range Routing (FRR) configuration files.
 
 Use "section --help" for basic usage information and option description.
+
+Links:
+[1] https://pubs.opengroup.org/onlinepubs/9699919799/utilities/expand.html
+[2] https://pubs.opengroup.org/onlinepubs/9699919799/utilities/unexpand.html
