@@ -53,11 +53,11 @@ for T in *.opts; do
   IN="${NAME}.in"
   OUT="${NAME}.out"
   EXP="${NAME}.exp"
-  EXP_EC=$(cat "${NAME}.ec")
   test -r "$PAT" && test -r "$IN" && test -r "$EXP" && test -r "${NAME}.ec" || {
     incomplete_test "$NAME"
     exit 1
   }
+  EXP_EC=$(cat "${NAME}.ec")
   RES=0
   "$FILTER" $(cat "$T") "$(cat "$PAT")" "$IN" > "$OUT"
   EC=$?
