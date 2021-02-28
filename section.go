@@ -32,7 +32,7 @@ import (
 
 const (
 	PROG        = "section"
-	VERSION     = "0.0.7"
+	VERSION     = "0.0.8"
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 500MiB
 	DESC        = "prints indented text sections started by matching a regular expression."
 	COPYRIGHT   = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
@@ -121,6 +121,7 @@ func section(r io.Reader) (matched bool, err error) {
 	err = nil        // return an error, if one occurs
 	in_sect := false // currently inside a section?
 	s_ind := 0       // indentation depth of current section
+	s_y_ind := 0     // YAML indentation depth of current section
 	s := bufio.NewScanner(r)
 	var buf []byte
 	s.Buffer(buf, ARB_BUF_LIM)
@@ -135,10 +136,12 @@ func section(r io.Reader) (matched bool, err error) {
 		if invert_match {
 			pat_match = !pat_match
 		}
-		cont_sect := in_sect && (c_ind > s_ind || c_y_ind > s_ind)
+		cont_sect := in_sect && (c_ind > s_ind ||
+			(s_y_ind >= s_ind && c_y_ind > s_y_ind))
 		if pat_match || cont_sect {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
+				s_y_ind = c_y_ind
 			}
 			in_sect = true
 			matched = true
@@ -155,6 +158,7 @@ func section(r io.Reader) (matched bool, err error) {
 			}
 			in_sect = false
 			s_ind = 0
+			s_y_ind = 0
 		}
 	}
 	err = s.Err()
