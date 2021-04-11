@@ -1,0 +1,50 @@
+Building and Installing with Make
+---------------------------------
+
+To build section, type:
+
+    make
+
+You can use section from the directory you built it, no installation
+required.
+
+To test the just built section program, type:
+
+    make check
+
+If you want to install it to your system, type:
+
+    make install
+
+To change the default install location of /usr/local to /usr, type:
+
+    make PREFIX=/usr install
+
+You have to keep track of the installed files yourself, if you want to
+remove them later on.
+
+Installing section to your system may require administrative ("root")
+access.
+
+Additional Makefile Targets
+---------------------------
+- clean:     remove generated files except archives
+- distclean: remove all generated files
+- tar:       create a gzip compressed tar-ball of the sources for distribution
+
+Building and Installing with the Go Tool
+----------------------------------------
+
+The Go tool for managing Go source code is intended as a Go specific
+replacement for Make, and it provides quite a bit of additional
+functionality.  If you have set up your system correctly for the Go tool,
+and saved the section sources in an appropriate place for the Go tool
+to find them, you can use the Go tool to build and/or install section.
+
+To build section, type:
+
+    go build section
+
+To install section, type:
+
+    go install section
