@@ -34,6 +34,9 @@ const (
 	PROG        = "section"
 	VERSION     = "0.0.8"
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 500MiB
+	IND_RE      = `^[ \t]*`
+	YAML_IND_RE = `^[ \t]*- `
+	RE_IGN_CASE = `(?i)`
 	DESC        = "prints indented text sections started by matching a regular expression."
 	COPYRIGHT   = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
@@ -48,26 +51,22 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_VERSION      = "display version and exit"
 )
 
-var (
+type parameters struct {
 	// options
-	ignore_case   bool
-	invert_match  bool
-	omit          bool
-	quiet         bool
-	print_help    bool
-	print_version bool
-	yaml_ind      bool
-	// enable error handling
-	err error
+	ignore_case  bool
+	invert_match bool
+	omit         bool
+	quiet        bool
+	yaml_ind     bool
 	// actions performed by the section algorithm
 	in_sect_action  func([]byte) error
 	out_sect_action func([]byte) error
 	// regular expressions matching indentation
-	ind_re      = regexp.MustCompile(`^[ \t]*`)
-	yaml_ind_re = regexp.MustCompile(`^[ \t]*- `)
+	ind_re      *regexp.Regexp
+	yaml_ind_re *regexp.Regexp
 	// regular expression matching sections
 	pat_re *regexp.Regexp
-)
+}
 
 // print short usage information
 func usage(w io.Writer) {
@@ -116,7 +115,7 @@ func no_output(_ []byte) error {
 }
 
 // read input text and write matching sections to output
-func section(r io.Reader) (matched bool, err error) {
+func section(p parameters, r io.Reader) (matched bool, err error) {
 	matched = false    // return if something was matched
 	err = nil          // return an error, if one occurs
 	in_sect := false   // currently inside a section?
@@ -132,12 +131,12 @@ func section(r io.Reader) (matched bool, err error) {
 	s.Buffer(buf, ARB_BUF_LIM)
 	for s.Scan() {
 		l = s.Bytes()
-		c_ind = len(ind_re.Find(l))
-		if yaml_ind {
-			c_y_ind = len(yaml_ind_re.Find(l))
+		c_ind = len(p.ind_re.Find(l))
+		if p.yaml_ind {
+			c_y_ind = len(p.yaml_ind_re.Find(l))
 		}
-		pat_match = pat_re.Match(l)
-		if invert_match {
+		pat_match = p.pat_re.Match(l)
+		if p.invert_match {
 			pat_match = !pat_match
 		}
 		cont_sect = in_sect && (c_ind > s_ind ||
@@ -149,13 +148,13 @@ func section(r io.Reader) (matched bool, err error) {
 			}
 			in_sect = true
 			matched = true
-			err = in_sect_action(l)
+			err = p.in_sect_action(l)
 			if err != nil {
 				log.Print(err)
 				return
 			}
 		} else {
-			err = out_sect_action(l)
+			err = p.out_sect_action(l)
 			if err != nil {
 				log.Print(err)
 				return
@@ -187,28 +186,43 @@ func exit_code(cur int, m bool, err error) (ec int) {
 }
 
 func main() {
+	// for error handling
+	var err error
+
+	// parameters for section algorithm
+	p := parameters{
+		ignore_case:     false,
+		invert_match:    false,
+		omit:            false,
+		quiet:           false,
+		yaml_ind:        false,
+		in_sect_action:  print_line,
+		out_sect_action: no_output,
+		ind_re:          regexp.MustCompile(IND_RE),
+		yaml_ind_re:     regexp.MustCompile(YAML_IND_RE),
+	}
+
 	// error logging
 	log.SetPrefix(PROG + ": ")
 	log.SetFlags(0)
 
-	// initialize actions in- and outside of sections
-	in_sect_action = print_line
-	out_sect_action = no_output
-
 	// define command line flags
+	var print_help, print_version bool
 	flag.Usage = func() { usage_err(errors.New("unknown option")) }
+	// print program information instead of sections
 	flag.BoolVar(&print_help, "help", false, OD_HELP)
 	flag.BoolVar(&print_help, "h", false, OD_HELP)
-	flag.BoolVar(&ignore_case, "ignore-case", false, OD_IGNORE_CASE)
-	flag.BoolVar(&ignore_case, "i", false, OD_IGNORE_CASE)
-	flag.BoolVar(&invert_match, "invert-match", false, OD_INVERT_MATCH)
-	flag.BoolVar(&omit, "omit", false, OD_OMIT)
 	flag.BoolVar(&print_version, "version", false, OD_VERSION)
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
-	flag.BoolVar(&quiet, "quiet", false, OD_QUIET)
-	flag.BoolVar(&quiet, "q", false, OD_QUIET)
-	flag.BoolVar(&quiet, "silent", false, OD_QUIET)
-	flag.BoolVar(&yaml_ind, "yaml", false, OD_YAML_IND)
+	// modify section behavior
+	flag.BoolVar(&p.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
+	flag.BoolVar(&p.ignore_case, "i", false, OD_IGNORE_CASE)
+	flag.BoolVar(&p.invert_match, "invert-match", false, OD_INVERT_MATCH)
+	flag.BoolVar(&p.omit, "omit", false, OD_OMIT)
+	flag.BoolVar(&p.quiet, "quiet", false, OD_QUIET)
+	flag.BoolVar(&p.quiet, "q", false, OD_QUIET)
+	flag.BoolVar(&p.quiet, "silent", false, OD_QUIET)
+	flag.BoolVar(&p.yaml_ind, "yaml", false, OD_YAML_IND)
 	// parse command line flags
 	flag.Parse()
 
@@ -221,13 +235,13 @@ func main() {
 		version()
 		os.Exit(0)
 	}
-	if omit {
-		in_sect_action = no_output
-		out_sect_action = print_line
+	if p.omit {
+		p.in_sect_action = no_output
+		p.out_sect_action = print_line
 	}
-	if quiet {
-		in_sect_action = no_output
-		out_sect_action = no_output
+	if p.quiet {
+		p.in_sect_action = no_output
+		p.out_sect_action = no_output
 	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {
@@ -235,10 +249,10 @@ func main() {
 	}
 	pat_str := flag.Arg(0)
 	// adjust pattern according to command line flags
-	if ignore_case {
-		pat_str = `(?i)` + pat_str
+	if p.ignore_case {
+		pat_str = RE_IGN_CASE + pat_str
 	}
-	pat_re, err = regexp.Compile(pat_str)
+	p.pat_re, err = regexp.Compile(pat_str)
 	if err != nil {
 		usage_err(err)
 	}
@@ -247,7 +261,7 @@ func main() {
 	// operate on STDIN if no file name is provided,
 	// otherwise operate on the given files
 	if flag.NArg() == 1 {
-		m, err := section(os.Stdin)
+		m, err := section(p, os.Stdin)
 		ec = exit_code(ec, m, err)
 	} else {
 		for _, arg := range flag.Args()[1:] {
@@ -256,7 +270,7 @@ func main() {
 				log.Print(err)
 				continue
 			}
-			m, err := section(f)
+			m, err := section(p, f)
 			ec = exit_code(ec, m, err)
 			f.Close()
 		}
