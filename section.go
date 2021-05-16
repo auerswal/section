@@ -32,10 +32,11 @@ import (
 
 const (
 	PROG        = "section"
-	VERSION     = "0.0.8"
+	VERSION     = "0.0.9"
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 500MiB
 	IND_RE      = `^[ \t]*`
 	YAML_IND_RE = `^[ \t]*- `
+	BLANK_RE    = `^[ \t]*$`
 	RE_IGN_CASE = `(?i)`
 	DESC        = "prints indented text sections started by matching a regular expression."
 	COPYRIGHT   = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
@@ -43,6 +44,7 @@ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
 	OD_HELP         = "display help text and exit"
+	OD_IGNORE_BLANK = "continue sections over blank lines"
 	OD_IGNORE_CASE  = "ignore case distinctions"
 	OD_INVERT_MATCH = "match sections not starting with PATTERN"
 	OD_OMIT         = "omit matched sections, print everything else"
@@ -64,6 +66,8 @@ type parameters struct {
 	// regular expressions matching indentation
 	ind_re      *regexp.Regexp
 	yaml_ind_re *regexp.Regexp
+	// regular expression matching lines to ignore
+	ignore_re *regexp.Regexp
 	// regular expression matching sections
 	pat_re *regexp.Regexp
 }
@@ -131,6 +135,18 @@ func section(p parameters, r io.Reader) (matched bool, err error) {
 	s.Buffer(buf, ARB_BUF_LIM)
 	for s.Scan() {
 		l = s.Bytes()
+		if p.ignore_re != nil && p.ignore_re.Match(l) {
+			if in_sect {
+				err = p.in_sect_action(l)
+			} else {
+				err = p.out_sect_action(l)
+			}
+			if err != nil {
+				log.Print(err)
+				return
+			}
+			continue
+		}
 		c_ind = len(p.ind_re.Find(l))
 		if p.yaml_ind {
 			c_y_ind = len(p.yaml_ind_re.Find(l))
@@ -200,6 +216,8 @@ func main() {
 		out_sect_action: no_output,
 		ind_re:          regexp.MustCompile(IND_RE),
 		yaml_ind_re:     regexp.MustCompile(YAML_IND_RE),
+		ignore_re:       nil,
+		pat_re:          nil,
 	}
 
 	// error logging
@@ -223,6 +241,7 @@ func main() {
 	flag.BoolVar(&p.quiet, "q", false, OD_QUIET)
 	flag.BoolVar(&p.quiet, "silent", false, OD_QUIET)
 	flag.BoolVar(&p.yaml_ind, "yaml", false, OD_YAML_IND)
+	ignore_blank := flag.Bool("ignore-blank", false, OD_IGNORE_BLANK)
 	// parse command line flags
 	flag.Parse()
 
@@ -242,6 +261,9 @@ func main() {
 	if p.quiet {
 		p.in_sect_action = no_output
 		p.out_sect_action = no_output
+	}
+	if *ignore_blank {
+		p.ignore_re = regexp.MustCompile(BLANK_RE)
 	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {
