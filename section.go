@@ -49,7 +49,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_INVERT_MATCH = "match sections not starting with PATTERN"
 	OD_OMIT         = "omit matched sections, print everything else"
 	OD_QUIET        = "suppress all normal output"
-	OD_YAML_IND     = "allow YAML list indentation"
+	OD_YAML_IND     = "additionally allow YAML list indentation"
 	OD_VERSION      = "display version and exit"
 )
 
