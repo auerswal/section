@@ -1,0 +1,4 @@
+router bgp 1
+ no bgp default ipv4-unicast
+ neighbor 192.0.2.1 remote-as 2
+ neighbor 2001:db8::1 remote-as 3
