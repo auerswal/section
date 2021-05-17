@@ -33,7 +33,7 @@ import (
 const (
 	PROG        = "section"
 	VERSION     = "0.0.9"
-	ARB_BUF_LIM = 512 * 1024 * 1024 // 500MiB
+	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	IND_RE      = `^[ \t]*`
 	YAML_IND_RE = `^[ \t]*- `
 	BLANK_RE    = `^[ \t]*$`
