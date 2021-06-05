@@ -26,11 +26,14 @@ remove them later on.
 Installing section to your system may require administrative ("root")
 access.
 
+
 Additional Makefile Targets
 ---------------------------
+
 - clean:     remove generated files except archives
 - distclean: remove all generated files
 - tar:       create a gzip compressed tar-ball of the sources for distribution
+
 
 Building and Installing with the Go Tool
 ----------------------------------------
