@@ -1,0 +1,118 @@
+.TH section 1 "@DATE@" @VERSION@ "print indented sections"
+
+.SH NAME
+section \- print indented text sections started by matching a pattern
+
+.SH SYNOPSIS
+.B section
+.I [OPTIONS] PATTERN [FILE...]
+
+.SH DESCRIPTION
+.B section
+searches for
+.I PATTERN
+in each
+.I FILE
+(or standard input if no
+.I FILE
+is given), and prints the matching lines,
+as well as any directly following lines indented deeper than the preceding
+matching line,
+to standard output.
+.P
+.I PATTERN
+is a regular expression, see section
+.B "REGULAR EXPRESSIONS"
+below.
+
+.SH OPTIONS
+Options can be used to modify the operation of
+.BR section .
+.B section
+uses Go's
+.I flag
+package for option processing.
+.SS -h, --help
+Write a help message to standard output.
+.SS -V, --version
+Write version information to standard output.
+.SS --ignore-blank
+Ignore the indentation level of blank lines,
+so that sections always continue across them.
+.SS -i, --ignore-case
+Ignore case distinctions for pattern matching,
+so that characters that differ only in case match each other.
+.SS --invert-match
+Match sections not starting with
+.IR PATTERN .
+.SS --omit
+Omit matched sections,
+print everything else instead.
+.SS -q, --quiet, --silent
+Suppress all normal output.
+The exit code can be used to determine if the
+.I PATTERN
+was matched or not.
+Error messages are still printed.
+.SS --yaml
+Support YAML list indentation in addition to white space based indentation.
+
+.SH "REGULAR EXPRESSIONS"
+.B section
+uses Go's
+.I regexp
+package, and thus understands the
+.I RE2
+syntax described at
+.UR https://golang.org/s/re2syntax
+.UE
+
+.SH EXIT STATUS
+.IP \(bu
+0, if at least one line matched the
+.I PATTERN
+.IP \(bu
+1, if no line matched the
+.I PATTERN
+.IP \(bu
+2, if an error occurred
+
+.SH "BUGS AND LIMITATIONS"
+.IP \(bu
+.B section
+does not distinguish between
+.I Space
+and
+.I Tab
+characters used for indentation.
+.IP \(bu
+The maxmimum line size supported by
+.B section
+is
+.IR "512 MiB" .
+
+.SH AUTHOR
+.B section
+was written by Erik Auerswald <auerswal@unix-ag.uni-kl.de>.
+
+.SH COPYRIGHT
+Copyright \(co @CRYEARS@ Erik Auerswald.
+License GPLv3+: GNU GPL version 3 or later
+.UR http://gnu.org/licenses/gpl.html
+.UE
+.P
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+.SH "SEE ALSO"
+.BR grep (1),
+.BR expand (1),
+.BR unexpand (1),
+.P
+.B go doc
+.IR flag ,
+.B go doc
+.IR regexp ,
+.P
+.UR https://www.unix-ag.uni-kl.de/~auerswal/section/
+.UE
