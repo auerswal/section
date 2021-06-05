@@ -1,0 +1,18 @@
+Noteworthy Changes in section Releases
+======================================
+
+Upcoming Version (XXXX-XX-XX):
+------------------------------
+ * Add a man page.
+ * Add a NEWS file to list noteworthy changes in released versions.
+
+Version 0.0.9 (2021-05-17):
+---------------------------
+ * New option "--ignore-blank" to continue sections across blank lines.
+
+Version 0.0.8 (2021-04-11):
+---------------------------
+ * First released section version.
+ * Documentation consists of README, INSTALL, and "--help" output.
+ * Supports options "--help", "--version", "--ignore-case", "--invert-match",
+   "--omit", "--quiet", and "--yaml".
