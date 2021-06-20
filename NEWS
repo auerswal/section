@@ -1,10 +1,12 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Upcoming Version (XXXX-XX-XX):
-------------------------------
+Version 0.0.10 (2021-06-20):
+----------------------------
  * Add a man page.
  * Add a NEWS file to list noteworthy changes in released versions.
+ * New option "--separator" to print a separator between matched sections.
+ * New option "--separator-string" to control the section separator.
 
 Version 0.0.9 (2021-05-17):
 ---------------------------

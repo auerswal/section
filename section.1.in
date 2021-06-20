@@ -48,12 +48,27 @@ Match sections not starting with
 .SS --omit
 Omit matched sections,
 print everything else instead.
+This disables the
+.B --separator
+option.
 .SS -q, --quiet, --silent
 Suppress all normal output.
 The exit code can be used to determine if the
 .I PATTERN
 was matched or not.
 Error messages are still printed.
+.SS --separator
+Print a separator line between matched sections.
+The
+.B --omit
+option disables this.
+.SS --separator-string SEPARATOR
+Use the given
+.I SEPARATOR
+instead of the default
+.B --
+when printing section separators.
+A newline is printed after the separator string.
 .SS --yaml
 Support YAML list indentation in addition to white space based indentation.
 
@@ -90,6 +105,12 @@ The maxmimum line size supported by
 .B section
 is
 .IR "512 MiB" .
+.IP \(bu
+Use of the
+.B \-\-omit
+option disables a
+.B \-\-separator
+option given as well.
 
 .SH AUTHOR
 .B section

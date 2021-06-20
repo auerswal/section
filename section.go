@@ -31,35 +31,45 @@ import (
 )
 
 const (
-	PROG        = "section"
-	VERSION     = "0.0.9"
+	// program information
+	PROG    = "section"
+	VERSION = "0.0.10"
+	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
+	// internal regular expressions
 	IND_RE      = `^[ \t]*`
 	YAML_IND_RE = `^[ \t]*- `
 	BLANK_RE    = `^[ \t]*$`
 	RE_IGN_CASE = `(?i)`
-	DESC        = "prints indented text sections started by matching a regular expression."
-	COPYRIGHT   = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+	// default values
+	DEF_SEPARATOR = "--"
+	// documentation
+	DESC      = "prints indented text sections started by matching a regular expression."
+	COPYRIGHT = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
-	OD_HELP         = "display help text and exit"
-	OD_IGNORE_BLANK = "continue sections over blank lines"
-	OD_IGNORE_CASE  = "ignore case distinctions"
-	OD_INVERT_MATCH = "match sections not starting with PATTERN"
-	OD_OMIT         = "omit matched sections, print everything else"
-	OD_QUIET        = "suppress all normal output"
-	OD_YAML_IND     = "additionally allow YAML list indentation"
-	OD_VERSION      = "display version and exit"
+	OD_HELP             = "display help text and exit"
+	OD_IGNORE_BLANK     = "continue sections over blank lines"
+	OD_IGNORE_CASE      = "ignore case distinctions"
+	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
+	OD_OMIT             = "omit matched sections, print everything else"
+	OD_QUIET            = "suppress all normal output"
+	OD_SEPARATOR        = "print a separator line between sections"
+	OD_SEPARATOR_STRING = "specify separator string"
+	OD_YAML_IND         = "additionally allow YAML list indentation"
+	OD_VERSION          = "display version and exit"
 )
 
 type parameters struct {
 	// options
-	ignore_case  bool
-	invert_match bool
-	omit         bool
-	quiet        bool
-	yaml_ind     bool
+	ignore_case      bool
+	invert_match     bool
+	omit             bool
+	quiet            bool
+	separator        bool
+	separator_string string
+	yaml_ind         bool
 	// actions performed by the section algorithm
 	in_sect_action  func([]byte) error
 	out_sect_action func([]byte) error
@@ -157,6 +167,15 @@ func section(p parameters, r io.Reader) (matched bool, err error) {
 		}
 		cont_sect = in_sect && (c_ind > s_ind ||
 			(s_y_ind >= s_ind && c_y_ind > s_y_ind))
+		if p.separator && !p.omit &&
+			pat_match && matched && !cont_sect {
+			_, err = os.Stdout.WriteString(p.separator_string +
+				"\n")
+			if err != nil {
+				log.Print(err)
+				return
+			}
+		}
 		if pat_match || cont_sect {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
@@ -207,17 +226,19 @@ func main() {
 
 	// parameters for section algorithm
 	p := parameters{
-		ignore_case:     false,
-		invert_match:    false,
-		omit:            false,
-		quiet:           false,
-		yaml_ind:        false,
-		in_sect_action:  print_line,
-		out_sect_action: no_output,
-		ind_re:          regexp.MustCompile(IND_RE),
-		yaml_ind_re:     regexp.MustCompile(YAML_IND_RE),
-		ignore_re:       nil,
-		pat_re:          nil,
+		ignore_case:      false,
+		invert_match:     false,
+		omit:             false,
+		separator:        false,
+		separator_string: DEF_SEPARATOR,
+		quiet:            false,
+		yaml_ind:         false,
+		in_sect_action:   print_line,
+		out_sect_action:  no_output,
+		ind_re:           regexp.MustCompile(IND_RE),
+		yaml_ind_re:      regexp.MustCompile(YAML_IND_RE),
+		ignore_re:        nil,
+		pat_re:           nil,
 	}
 
 	// error logging
@@ -240,6 +261,9 @@ func main() {
 	flag.BoolVar(&p.quiet, "quiet", false, OD_QUIET)
 	flag.BoolVar(&p.quiet, "q", false, OD_QUIET)
 	flag.BoolVar(&p.quiet, "silent", false, OD_QUIET)
+	flag.BoolVar(&p.separator, "separator", false, OD_SEPARATOR)
+	flag.StringVar(&p.separator_string, "separator-string", DEF_SEPARATOR,
+		OD_SEPARATOR_STRING)
 	flag.BoolVar(&p.yaml_ind, "yaml", false, OD_YAML_IND)
 	ignore_blank := flag.Bool("ignore-blank", false, OD_IGNORE_BLANK)
 	// parse command line flags
