@@ -32,44 +32,44 @@ Options can be used to modify the operation of
 uses Go's
 .I flag
 package for option processing.
-.SS -h, --help
+.SS \-h, \-\-help
 Write a help message to standard output.
-.SS -V, --version
+.SS \-V, \-\-version
 Write version information to standard output.
-.SS --ignore-blank
+.SS \-\-ignore\-blank
 Ignore the indentation level of blank lines,
 so that sections always continue across them.
-.SS -i, --ignore-case
+.SS \-i, \-\-ignore\-case
 Ignore case distinctions for pattern matching,
 so that characters that differ only in case match each other.
-.SS --invert-match
+.SS \-\-invert\-match
 Match sections not starting with
 .IR PATTERN .
-.SS --omit
+.SS \-\-omit
 Omit matched sections,
 print everything else instead.
 This disables the
-.B --separator
+.B \-\-separator
 option.
-.SS -q, --quiet, --silent
+.SS \-q, \-\-quiet, \-\-silent
 Suppress all normal output.
 The exit code can be used to determine if the
 .I PATTERN
 was matched or not.
 Error messages are still printed.
-.SS --separator
+.SS \-\-separator
 Print a separator line between matched sections.
 The
-.B --omit
+.B \-\-omit
 option disables this.
-.SS --separator-string SEPARATOR
+.SS \-\-separator\-string SEPARATOR
 Use the given
 .I SEPARATOR
 instead of the default
-.B --
+.B \-\-
 when printing section separators.
 A newline is printed after the separator string.
-.SS --yaml
+.SS \-\-yaml
 Support YAML list indentation in addition to white space based indentation.
 
 .SH "REGULAR EXPRESSIONS"
@@ -114,7 +114,7 @@ option given as well.
 
 .SH AUTHOR
 .B section
-was written by Erik Auerswald <auerswal@unix-ag.uni-kl.de>.
+was written by Erik Auerswald <auerswal@unix\-ag.uni\-kl.de>.
 
 .SH COPYRIGHT
 Copyright \(co @CRYEARS@ Erik Auerswald.
@@ -135,5 +135,5 @@ There is NO WARRANTY, to the extent permitted by law.
 .B go doc
 .IR regexp ,
 .P
-.UR https://www.unix-ag.uni-kl.de/~auerswal/section/
+.UR https://www.unix\-ag.uni\-kl.de/~auerswal/section/
 .UE
