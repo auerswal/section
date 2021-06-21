@@ -106,6 +106,10 @@ The maxmimum line size supported by
 is
 .IR "512 MiB" .
 .IP \(bu
+Regular expressions are limited to those supported by Go's
+.I regexp
+package.
+.IP \(bu
 Use of the
 .B \-\-omit
 option disables a
