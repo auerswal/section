@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.0.10"
+	VERSION = "0.0.11"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -53,6 +53,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_IGNORE_BLANK     = "continue sections over blank lines"
 	OD_IGNORE_CASE      = "ignore case distinctions"
 	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
+	OD_LINE_NUMBER      = "prefix output line with line number"
 	OD_OMIT             = "omit matched sections, print everything else"
 	OD_QUIET            = "suppress all normal output"
 	OD_SEPARATOR        = "print a separator line between sections"
@@ -61,7 +62,8 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_VERSION          = "display version and exit"
 )
 
-type parameters struct {
+// parameterize section algorithm
+type section_params struct {
 	// options
 	ignore_case      bool
 	invert_match     bool
@@ -71,8 +73,8 @@ type parameters struct {
 	separator_string string
 	yaml_ind         bool
 	// actions performed by the section algorithm
-	in_sect_action  func([]byte) error
-	out_sect_action func([]byte) error
+	in_sect_action  func([]byte, uint64) error
+	out_sect_action func([]byte, uint64) error
 	// regular expressions matching indentation
 	ind_re      *regexp.Regexp
 	yaml_ind_re *regexp.Regexp
@@ -80,6 +82,11 @@ type parameters struct {
 	ignore_re *regexp.Regexp
 	// regular expression matching sections
 	pat_re *regexp.Regexp
+}
+
+// parameterize printer generator
+type printer_params struct {
+	line_number bool
 }
 
 // print short usage information
@@ -113,23 +120,36 @@ func version() {
 	fmt.Println(COPYRIGHT)
 }
 
-// print the given line to standard output
-func print_line(l []byte) (err error) {
-	_, err = os.Stdout.Write(l)
-	if err != nil {
+// create a parameterized printer function
+func gen_printer(p printer_params) func([]byte, uint64) error {
+	print_line := func(l []byte, _ uint64) (err error) {
+		_, err = os.Stdout.Write(l)
+		if err != nil {
+			return err
+		}
+		_, err = os.Stdout.WriteString("\n")
 		return err
 	}
-	_, err = os.Stdout.WriteString("\n")
-	return err
+	printer := print_line
+	if p.line_number {
+		printer = func(l []byte, l_nr uint64) (err error) {
+			_, err = fmt.Printf("%d:", l_nr)
+			if err != nil {
+				return err
+			}
+			return print_line(l, l_nr)
+		}
+	}
+	return printer
 }
 
 // do not print the given line
-func no_output(_ []byte) error {
+func no_output(_ []byte, _ uint64) error {
 	return nil
 }
 
 // read input text and write matching sections to output
-func section(p parameters, r io.Reader) (matched bool, err error) {
+func section(p section_params, r io.Reader) (matched bool, err error) {
 	matched = false    // return if something was matched
 	err = nil          // return an error, if one occurs
 	in_sect := false   // currently inside a section?
@@ -141,15 +161,17 @@ func section(p parameters, r io.Reader) (matched bool, err error) {
 	c_y_ind := 0       // YAML indentation depth of current line
 	var buf []byte     // buffer space to hold input data
 	var l []byte       // one line of input data
+	var l_nr uint64     // current line number
 	s := bufio.NewScanner(r)
 	s.Buffer(buf, ARB_BUF_LIM)
 	for s.Scan() {
+		l_nr++
 		l = s.Bytes()
 		if p.ignore_re != nil && p.ignore_re.Match(l) {
 			if in_sect {
-				err = p.in_sect_action(l)
+				err = p.in_sect_action(l, l_nr)
 			} else {
-				err = p.out_sect_action(l)
+				err = p.out_sect_action(l, l_nr)
 			}
 			if err != nil {
 				log.Print(err)
@@ -183,13 +205,13 @@ func section(p parameters, r io.Reader) (matched bool, err error) {
 			}
 			in_sect = true
 			matched = true
-			err = p.in_sect_action(l)
+			err = p.in_sect_action(l, l_nr)
 			if err != nil {
 				log.Print(err)
 				return
 			}
 		} else {
-			err = p.out_sect_action(l)
+			err = p.out_sect_action(l, l_nr)
 			if err != nil {
 				log.Print(err)
 				return
@@ -225,7 +247,7 @@ func main() {
 	var err error
 
 	// parameters for section algorithm
-	p := parameters{
+	sp := section_params{
 		ignore_case:      false,
 		invert_match:     false,
 		omit:             false,
@@ -233,12 +255,15 @@ func main() {
 		separator_string: DEF_SEPARATOR,
 		quiet:            false,
 		yaml_ind:         false,
-		in_sect_action:   print_line,
 		out_sect_action:  no_output,
 		ind_re:           regexp.MustCompile(IND_RE),
 		yaml_ind_re:      regexp.MustCompile(YAML_IND_RE),
 		ignore_re:        nil,
 		pat_re:           nil,
+	}
+	// parameters for printer generator
+	pp := printer_params{
+		line_number: false,
 	}
 
 	// error logging
@@ -254,17 +279,19 @@ func main() {
 	flag.BoolVar(&print_version, "version", false, OD_VERSION)
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
 	// modify section behavior
-	flag.BoolVar(&p.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
-	flag.BoolVar(&p.ignore_case, "i", false, OD_IGNORE_CASE)
-	flag.BoolVar(&p.invert_match, "invert-match", false, OD_INVERT_MATCH)
-	flag.BoolVar(&p.omit, "omit", false, OD_OMIT)
-	flag.BoolVar(&p.quiet, "quiet", false, OD_QUIET)
-	flag.BoolVar(&p.quiet, "q", false, OD_QUIET)
-	flag.BoolVar(&p.quiet, "silent", false, OD_QUIET)
-	flag.BoolVar(&p.separator, "separator", false, OD_SEPARATOR)
-	flag.StringVar(&p.separator_string, "separator-string", DEF_SEPARATOR,
+	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
+	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
+	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
+	flag.BoolVar(&pp.line_number, "line-number", false, OD_LINE_NUMBER)
+	flag.BoolVar(&pp.line_number, "n", false, OD_LINE_NUMBER)
+	flag.BoolVar(&sp.omit, "omit", false, OD_OMIT)
+	flag.BoolVar(&sp.quiet, "quiet", false, OD_QUIET)
+	flag.BoolVar(&sp.quiet, "q", false, OD_QUIET)
+	flag.BoolVar(&sp.quiet, "silent", false, OD_QUIET)
+	flag.BoolVar(&sp.separator, "separator", false, OD_SEPARATOR)
+	flag.StringVar(&sp.separator_string, "separator-string", DEF_SEPARATOR,
 		OD_SEPARATOR_STRING)
-	flag.BoolVar(&p.yaml_ind, "yaml", false, OD_YAML_IND)
+	flag.BoolVar(&sp.yaml_ind, "yaml", false, OD_YAML_IND)
 	ignore_blank := flag.Bool("ignore-blank", false, OD_IGNORE_BLANK)
 	// parse command line flags
 	flag.Parse()
@@ -278,16 +305,18 @@ func main() {
 		version()
 		os.Exit(0)
 	}
-	if p.omit {
-		p.in_sect_action = no_output
-		p.out_sect_action = print_line
+	printer := gen_printer(pp)
+	sp.in_sect_action = printer
+	if sp.omit {
+		sp.in_sect_action = no_output
+		sp.out_sect_action = printer
 	}
-	if p.quiet {
-		p.in_sect_action = no_output
-		p.out_sect_action = no_output
+	if sp.quiet {
+		sp.in_sect_action = no_output
+		sp.out_sect_action = no_output
 	}
 	if *ignore_blank {
-		p.ignore_re = regexp.MustCompile(BLANK_RE)
+		sp.ignore_re = regexp.MustCompile(BLANK_RE)
 	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {
@@ -295,10 +324,10 @@ func main() {
 	}
 	pat_str := flag.Arg(0)
 	// adjust pattern according to command line flags
-	if p.ignore_case {
+	if sp.ignore_case {
 		pat_str = RE_IGN_CASE + pat_str
 	}
-	p.pat_re, err = regexp.Compile(pat_str)
+	sp.pat_re, err = regexp.Compile(pat_str)
 	if err != nil {
 		usage_err(err)
 	}
@@ -307,7 +336,7 @@ func main() {
 	// operate on STDIN if no file name is provided,
 	// otherwise operate on the given files
 	if flag.NArg() == 1 {
-		m, err := section(p, os.Stdin)
+		m, err := section(sp, os.Stdin)
 		ec = exit_code(ec, m, err)
 	} else {
 		for _, arg := range flag.Args()[1:] {
@@ -316,7 +345,7 @@ func main() {
 				log.Print(err)
 				continue
 			}
-			m, err := section(p, f)
+			m, err := section(sp, f)
 			ec = exit_code(ec, m, err)
 			f.Close()
 		}

@@ -1,6 +1,10 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Version 0.0.11 (????-??-??):
+----------------------------
+ * Add option --line-number to prefix printed lines with the line number.
+
 Version 0.0.10 (2021-06-20):
 ----------------------------
  * Add a man page.
