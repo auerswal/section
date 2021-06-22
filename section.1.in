@@ -50,9 +50,6 @@ Prefix each output line with the line number in the respective input file.
 .SS \-\-omit
 Omit matched sections,
 print everything else instead.
-This disables the
-.B \-\-separator
-option.
 .SS \-q, \-\-quiet, \-\-silent
 Suppress all normal output.
 The exit code can be used to determine if the
@@ -61,9 +58,6 @@ was matched or not.
 Error messages are still printed.
 .SS \-\-separator
 Print a separator line between matched sections.
-The
-.B \-\-omit
-option disables this.
 .SS \-\-separator\-string SEPARATOR
 Use the given
 .I SEPARATOR
@@ -71,6 +65,8 @@ instead of the default
 .B \-\-
 when printing section separators.
 A newline is printed after the separator string.
+.SS \-\-with\-filename
+Prefix each output line with the file name.
 .SS \-\-yaml
 Support YAML list indentation in addition to white space based indentation.
 
@@ -111,12 +107,6 @@ is
 Regular expressions are limited to those supported by Go's
 .I regexp
 package.
-.IP \(bu
-Use of the
-.B \-\-omit
-option disables a
-.B \-\-separator
-option given as well.
 
 .SH AUTHOR
 .B section

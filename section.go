@@ -42,7 +42,8 @@ const (
 	BLANK_RE    = `^[ \t]*$`
 	RE_IGN_CASE = `(?i)`
 	// default values
-	DEF_SEPARATOR = "--"
+	DEF_SEPARATOR   = "--"
+	DEF_STDIN_LABEL = "(standard input)"
 	// documentation
 	DESC      = "prints indented text sections started by matching a regular expression."
 	COPYRIGHT = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
@@ -58,6 +59,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_QUIET            = "suppress all normal output"
 	OD_SEPARATOR        = "print a separator line between sections"
 	OD_SEPARATOR_STRING = "specify separator string"
+	OD_WITH_FILENAME    = "prefix output lines with file name"
 	OD_YAML_IND         = "additionally allow YAML list indentation"
 	OD_VERSION          = "display version and exit"
 )
@@ -65,16 +67,13 @@ There is NO WARRANTY, to the extent permitted by law.`
 // parameterize section algorithm
 type section_params struct {
 	// options
-	ignore_case      bool
-	invert_match     bool
-	omit             bool
-	quiet            bool
-	separator        bool
-	separator_string string
-	yaml_ind         bool
+	ignore_case  bool
+	invert_match bool
+	stdin_label  string
+	yaml_ind     bool
 	// actions performed by the section algorithm
-	in_sect_action  func([]byte, uint64) error
-	out_sect_action func([]byte, uint64) error
+	in_sect_action  func([]byte, uint64, bool) error
+	out_sect_action func([]byte, uint64, bool) error
 	// regular expressions matching indentation
 	ind_re      *regexp.Regexp
 	yaml_ind_re *regexp.Regexp
@@ -86,7 +85,13 @@ type section_params struct {
 
 // parameterize printer generator
 type printer_params struct {
-	line_number bool
+	line_number      bool
+	omit             bool
+	quiet            bool
+	separator        bool
+	separator_string string
+	with_filename    bool
+	filename         string
 }
 
 // print short usage information
@@ -121,8 +126,15 @@ func version() {
 }
 
 // create a parameterized printer function
-func gen_printer(p printer_params) func([]byte, uint64) error {
-	print_line := func(l []byte, _ uint64) (err error) {
+func gen_printer(p printer_params, in_sect bool) func([]byte, uint64, bool) error {
+	// no output
+	if p.quiet || (!p.omit && !in_sect) || (p.omit && in_sect) {
+		return func(l []byte, _ uint64, _ bool) (err error) {
+			return nil
+		}
+	}
+	// basic output
+	printer := func(l []byte, _ uint64, tr bool) (err error) {
 		_, err = os.Stdout.Write(l)
 		if err != nil {
 			return err
@@ -130,22 +142,45 @@ func gen_printer(p printer_params) func([]byte, uint64) error {
 		_, err = os.Stdout.WriteString("\n")
 		return err
 	}
-	printer := print_line
+	// prepend line number
 	if p.line_number {
-		printer = func(l []byte, l_nr uint64) (err error) {
+		prev_printer := printer
+		printer = func(l []byte, l_nr uint64, tr bool) (err error) {
 			_, err = fmt.Printf("%d:", l_nr)
 			if err != nil {
 				return err
 			}
-			return print_line(l, l_nr)
+			return prev_printer(l, l_nr, tr)
+		}
+	}
+	// prepend file name
+	if p.with_filename {
+		prev_printer := printer
+		printer = func(l []byte, l_nr uint64, tr bool) (err error) {
+			_, err = os.Stdout.WriteString(p.filename + ":")
+			if err != nil {
+				return err
+			}
+			return prev_printer(l, l_nr, tr)
+		}
+	}
+	// print a separator between sections
+	if p.separator {
+		prev_printer := printer
+		first_output := true
+		printer = func(l []byte, l_nr uint64, tr bool) (err error) {
+			if !first_output && tr {
+				_, err = os.Stdout.WriteString(
+					p.separator_string + "\n")
+			}
+			if err != nil {
+				return err
+			}
+			first_output = false
+			return prev_printer(l, l_nr, tr)
 		}
 	}
 	return printer
-}
-
-// do not print the given line
-func no_output(_ []byte, _ uint64) error {
-	return nil
 }
 
 // read input text and write matching sections to output
@@ -161,17 +196,19 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 	c_y_ind := 0       // YAML indentation depth of current line
 	var buf []byte     // buffer space to hold input data
 	var l []byte       // one line of input data
-	var l_nr uint64     // current line number
+	var l_nr uint64    // current line number
+	var tr bool        // transition into or out of section?
 	s := bufio.NewScanner(r)
 	s.Buffer(buf, ARB_BUF_LIM)
 	for s.Scan() {
 		l_nr++
 		l = s.Bytes()
+		// ignored lines do not cause a section transition
 		if p.ignore_re != nil && p.ignore_re.Match(l) {
 			if in_sect {
-				err = p.in_sect_action(l, l_nr)
+				err = p.in_sect_action(l, l_nr, false)
 			} else {
-				err = p.out_sect_action(l, l_nr)
+				err = p.out_sect_action(l, l_nr, false)
 			}
 			if err != nil {
 				log.Print(err)
@@ -189,15 +226,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		}
 		cont_sect = in_sect && (c_ind > s_ind ||
 			(s_y_ind >= s_ind && c_y_ind > s_y_ind))
-		if p.separator && !p.omit &&
-			pat_match && matched && !cont_sect {
-			_, err = os.Stdout.WriteString(p.separator_string +
-				"\n")
-			if err != nil {
-				log.Print(err)
-				return
-			}
-		}
+		tr = (in_sect && !cont_sect) || (!in_sect && pat_match)
 		if pat_match || cont_sect {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
@@ -205,13 +234,13 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			}
 			in_sect = true
 			matched = true
-			err = p.in_sect_action(l, l_nr)
+			err = p.in_sect_action(l, l_nr, tr)
 			if err != nil {
 				log.Print(err)
 				return
 			}
 		} else {
-			err = p.out_sect_action(l, l_nr)
+			err = p.out_sect_action(l, l_nr, tr)
 			if err != nil {
 				log.Print(err)
 				return
@@ -248,22 +277,24 @@ func main() {
 
 	// parameters for section algorithm
 	sp := section_params{
-		ignore_case:      false,
-		invert_match:     false,
-		omit:             false,
-		separator:        false,
-		separator_string: DEF_SEPARATOR,
-		quiet:            false,
-		yaml_ind:         false,
-		out_sect_action:  no_output,
-		ind_re:           regexp.MustCompile(IND_RE),
-		yaml_ind_re:      regexp.MustCompile(YAML_IND_RE),
-		ignore_re:        nil,
-		pat_re:           nil,
+		ignore_case:  false,
+		invert_match: false,
+		stdin_label:  DEF_STDIN_LABEL,
+		yaml_ind:     false,
+		ind_re:       regexp.MustCompile(IND_RE),
+		yaml_ind_re:  regexp.MustCompile(YAML_IND_RE),
+		ignore_re:    nil,
+		pat_re:       nil,
 	}
 	// parameters for printer generator
 	pp := printer_params{
-		line_number: false,
+		line_number:      false,
+		omit:             false,
+		quiet:            false,
+		separator:        false,
+		separator_string: DEF_SEPARATOR,
+		with_filename:    false,
+		filename:         "",
 	}
 
 	// error logging
@@ -284,13 +315,15 @@ func main() {
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
 	flag.BoolVar(&pp.line_number, "line-number", false, OD_LINE_NUMBER)
 	flag.BoolVar(&pp.line_number, "n", false, OD_LINE_NUMBER)
-	flag.BoolVar(&sp.omit, "omit", false, OD_OMIT)
-	flag.BoolVar(&sp.quiet, "quiet", false, OD_QUIET)
-	flag.BoolVar(&sp.quiet, "q", false, OD_QUIET)
-	flag.BoolVar(&sp.quiet, "silent", false, OD_QUIET)
-	flag.BoolVar(&sp.separator, "separator", false, OD_SEPARATOR)
-	flag.StringVar(&sp.separator_string, "separator-string", DEF_SEPARATOR,
+	flag.BoolVar(&pp.omit, "omit", false, OD_OMIT)
+	flag.BoolVar(&pp.quiet, "quiet", false, OD_QUIET)
+	flag.BoolVar(&pp.quiet, "q", false, OD_QUIET)
+	flag.BoolVar(&pp.quiet, "silent", false, OD_QUIET)
+	flag.BoolVar(&pp.separator, "separator", false, OD_SEPARATOR)
+	flag.StringVar(&pp.separator_string, "separator-string", DEF_SEPARATOR,
 		OD_SEPARATOR_STRING)
+	flag.BoolVar(&pp.with_filename, "with-filename", false,
+		OD_WITH_FILENAME)
 	flag.BoolVar(&sp.yaml_ind, "yaml", false, OD_YAML_IND)
 	ignore_blank := flag.Bool("ignore-blank", false, OD_IGNORE_BLANK)
 	// parse command line flags
@@ -304,16 +337,6 @@ func main() {
 	if print_version {
 		version()
 		os.Exit(0)
-	}
-	printer := gen_printer(pp)
-	sp.in_sect_action = printer
-	if sp.omit {
-		sp.in_sect_action = no_output
-		sp.out_sect_action = printer
-	}
-	if sp.quiet {
-		sp.in_sect_action = no_output
-		sp.out_sect_action = no_output
 	}
 	if *ignore_blank {
 		sp.ignore_re = regexp.MustCompile(BLANK_RE)
@@ -336,6 +359,9 @@ func main() {
 	// operate on STDIN if no file name is provided,
 	// otherwise operate on the given files
 	if flag.NArg() == 1 {
+		pp.filename = sp.stdin_label
+		sp.in_sect_action = gen_printer(pp, true)
+		sp.out_sect_action = gen_printer(pp, false)
 		m, err := section(sp, os.Stdin)
 		ec = exit_code(ec, m, err)
 	} else {
@@ -345,6 +371,9 @@ func main() {
 				log.Print(err)
 				continue
 			}
+			pp.filename = arg
+			sp.in_sect_action = gen_printer(pp, true)
+			sp.out_sect_action = gen_printer(pp, false)
 			m, err := section(sp, f)
 			ec = exit_code(ec, m, err)
 			f.Close()

@@ -1,0 +1,7 @@
+filename.line_nr.separator.omit.00.in:1:a
+filename.line_nr.separator.omit.00.in:2: b
+--
+filename.line_nr.separator.omit.00.in:5:e
+--
+filename.line_nr.separator.omit.00.in:7:g
+filename.line_nr.separator.omit.00.in:8: h

@@ -1,0 +1,8 @@
+filename.line_nr.separator.00.in:1:a
+filename.line_nr.separator.00.in:2: b
+--
+filename.line_nr.separator.00.in:3:c
+filename.line_nr.separator.00.in:4: d
+--
+filename.line_nr.separator.00.in:5:e
+filename.line_nr.separator.00.in:6: f

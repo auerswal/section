@@ -1,9 +1,11 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Version 0.0.11 (????-??-??):
+Version 0.0.11 (2021-06-22):
 ----------------------------
- * Add option --line-number to prefix printed lines with the line number.
+ * New option "--line-number" to prefix printed lines with the line number.
+ * New option "--with-filename" to prefix printed lines with the file name.
+ * Support combination of options "--separator" and "--omit".
 
 Version 0.0.10 (2021-06-20):
 ----------------------------
