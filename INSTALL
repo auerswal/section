@@ -30,9 +30,11 @@ access.
 Additional Makefile Targets
 ---------------------------
 
-- clean:     remove generated files except archives
-- distclean: remove all generated files
-- tar:       create a gzip compressed tar-ball of the sources for distribution
+- clean:          remove generated files except archives
+- distclean:      remove all generated files
+- tar:            create a gzip compressed tar-ball of the sources for
+                  distribution
+- section.1.html: create HTML version of manual page
 
 
 Building and Installing with the Go Tool
