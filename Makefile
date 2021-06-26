@@ -2,6 +2,7 @@ SOURCE  := section.go
 BINARY  := section
 MAN     := $(BINARY).1
 MANSRC  := $(MAN).in
+MANWEB  := $(MAN).html
 PREFIX  := /usr/local
 BINDIR  := $(PREFIX)/bin
 MANDIR  := $(PREFIX)/share/man/man1
@@ -24,6 +25,9 @@ $(MAN): $(MANSRC) Makefile
 	    -e "s/@DATE@/$(shell date +%Y-%m-%d)/" \
 	    -e 's/@CRYEARS@/$(CRYEARS)/' <$< >$@
 
+$(MANWEB): $(MAN) Makefile
+	mandoc -T html $< >$@
+
 check: $(BINARY)
 	(cd tests; ./run_tests)
 
@@ -42,7 +46,7 @@ tar: $(SRCDIR)
 	tar cvfz $(ARCHIVE) $(SRCDIR)
 
 clean:
-	$(RM) $(BINARY) $(MAN)
+	$(RM) $(BINARY) $(MAN) $(MANWEB)
 	$(RM) -r $(SRCDIR)
 	$(RM) $(wildcard tests/*.out) tests/tests.log
 
