@@ -107,6 +107,13 @@ is
 Regular expressions are limited to those supported by Go's
 .I regexp
 package.
+.IP \(bu
+Options are implemented with Go's
+.I flag
+package.
+Thus single character options cannot be combined,
+options longer than a single character cannot be abbreviated,
+and all options can be started by either a single or a double hyphen.
 
 .SH AUTHOR
 .B section
