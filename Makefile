@@ -3,6 +3,7 @@ BINARY  := section
 MAN     := $(BINARY).1
 MANSRC  := $(MAN).in
 MANWEB  := $(MAN).html
+HELPERS := generate_man_page_date.sh
 PREFIX  := /usr/local
 BINDIR  := $(PREFIX)/bin
 MANDIR  := $(PREFIX)/share/man/man1
@@ -22,7 +23,7 @@ $(BINARY): $(SOURCE) Makefile
 
 $(MAN): $(MANSRC) Makefile
 	sed -e 's/@VERSION@/$(VERSION)/' \
-	    -e 's/@DATE@/$(shell git log -n1 --date=short section.1.in | awk '/^Date:/ { print $$2 }')/' \
+	    -e 's/@DATE@/$(shell ./generate_man_page_date.sh)/' \
 	    -e 's/@CRYEARS@/$(CRYEARS)/' <$< >$@
 
 $(MANWEB): $(MAN) Makefile
@@ -38,9 +39,10 @@ install: all $(DOCS)
 	gzip -9 $(DESTDIR)$(MANDIR)/$(MAN)
 	install -m 0644 $(DOCS) $(DESTDIR)$(DOCDIR)/
 
-$(SRCDIR): $(SOURCE) $(DOCS) $(MAN) Makefile
+$(SRCDIR): $(SOURCE) $(DOCS) $(MAN) $(HELPERS) Makefile
 	install -d $(SRCDIR)
 	install -m 0644 $(ALLSRC) $(SRCDIR)/
+	install -m 0755 $(HELPERS) $(SRCDIR)/
 
 tar: $(SRCDIR)
 	tar cvfz $(ARCHIVE) $(SRCDIR)
