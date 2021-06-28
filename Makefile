@@ -8,7 +8,7 @@ PREFIX  := /usr/local
 BINDIR  := $(PREFIX)/bin
 MANDIR  := $(PREFIX)/share/man/man1
 DOCDIR  := $(PREFIX)/share/doc/$(BINARY)
-DOCS    := COPYING README $(MAN)
+DOCS    := COPYING README INSTALL $(MAN)
 VERSION := $(shell sed -En 's/^.*VERSION.*=.*"([0-9]+(\.[0-9]+){2})".*$$/\1/p' section.go)
 CRYEARS := $(shell sed -En 's/^ +Copyright[^0-9]+([0-9]+(-[0-9]+)?) .*$$/\1/p' section.go)
 SRCDIR  := $(BINARY)-$(VERSION)
