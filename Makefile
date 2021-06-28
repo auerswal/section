@@ -1,17 +1,18 @@
 SOURCE  := section.go
 BINARY  := section
 MAN     := $(BINARY).1
+MANDATE := $(shell git log -n1 --date=short section.1.in | awk '/^Date:/ { print $$2 }')
 MANSRC  := $(MAN).in
 MANWEB  := $(MAN).html
 PREFIX  := /usr/local
 BINDIR  := $(PREFIX)/bin
 MANDIR  := $(PREFIX)/share/man/man1
 DOCDIR  := $(PREFIX)/share/doc/$(BINARY)
-DOCS    := COPYING README
+DOCS    := COPYING README $(MAN)
 VERSION := $(shell sed -En 's/^.*VERSION.*=.*"([0-9]+(\.[0-9]+){2})".*$$/\1/p' section.go)
 CRYEARS := $(shell sed -En 's/^ +Copyright[^0-9]+([0-9]+(-[0-9]+)?) .*$$/\1/p' section.go)
 SRCDIR  := $(BINARY)-$(VERSION)
-ALLSRC  := Makefile $(SOURCE) $(MANSRC) $(DOCS)
+ALLSRC  := Makefile $(SOURCE) $(DOCS)
 ARCHIVE := $(SRCDIR).tar.gz
 GC      := $(if $(shell which gccgo),gccgo,go build)
 
@@ -22,7 +23,7 @@ $(BINARY): $(SOURCE) Makefile
 
 $(MAN): $(MANSRC) Makefile
 	sed -e 's/@VERSION@/$(VERSION)/' \
-	    -e "s/@DATE@/$(shell date +%Y-%m-%d)/" \
+	    -e 's/@DATE@/$(MANDATE)/' \
 	    -e 's/@CRYEARS@/$(CRYEARS)/' <$< >$@
 
 $(MANWEB): $(MAN) Makefile
