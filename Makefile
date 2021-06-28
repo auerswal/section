@@ -8,11 +8,11 @@ PREFIX  := /usr/local
 BINDIR  := $(PREFIX)/bin
 MANDIR  := $(PREFIX)/share/man/man1
 DOCDIR  := $(PREFIX)/share/doc/$(BINARY)
-DOCS    := COPYING README INSTALL $(MAN)
+DOCS    := COPYING README INSTALL
 VERSION := $(shell sed -En 's/^.*VERSION.*=.*"([0-9]+(\.[0-9]+){2})".*$$/\1/p' section.go)
 CRYEARS := $(shell sed -En 's/^ +Copyright[^0-9]+([0-9]+(-[0-9]+)?) .*$$/\1/p' section.go)
 SRCDIR  := $(BINARY)-$(VERSION)
-ALLSRC  := Makefile $(SOURCE) $(DOCS)
+ALLSRC  := Makefile $(SOURCE) $(DOCS) $(MAN)
 ARCHIVE := $(SRCDIR).tar.gz
 GC      := $(if $(shell which gccgo),gccgo,go build)
 
