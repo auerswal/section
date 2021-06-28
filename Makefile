@@ -39,7 +39,7 @@ install: all $(DOCS)
 	gzip -9 $(DESTDIR)$(MANDIR)/$(MAN)
 	install -m 0644 $(DOCS) $(DESTDIR)$(DOCDIR)/
 
-$(SRCDIR): $(SOURCE) $(DOCS) Makefile
+$(SRCDIR): $(SOURCE) $(DOCS) $(MAN) Makefile
 	install -d $(SRCDIR)
 	install -m 0644 $(ALLSRC) $(SRCDIR)/
 
