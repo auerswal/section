@@ -3,6 +3,9 @@ BINARY  := section
 MAN     := $(BINARY).1
 MANSRC  := $(MAN).in
 MANWEB  := $(MAN).html
+TESTDIR := tests
+TESTBIN := $(TESTDIR)/run_tests
+TESTS   := $(wildcard $(TESTDIR)/*.ec $(TESTDIR)/*.exp $(TESTDIR)/*.in $(TESTDIR)/*.opts $(TESTDIR)/*.pat)
 HELPERS := generate_man_page_date.sh
 PREFIX  := /usr/local
 BINDIR  := $(PREFIX)/bin
@@ -40,8 +43,10 @@ install: all $(DOCS)
 	install -m 0644 $(DOCS) $(DESTDIR)$(DOCDIR)/
 
 $(SRCDIR): $(SOURCE) $(DOCS) $(MAN) $(HELPERS) Makefile
-	install -d $(SRCDIR)
+	install -d $(SRCDIR)/$(TESTDIR)
 	install -m 0644 $(ALLSRC) $(SRCDIR)/
+	install -m 0644 $(TESTS) $(SRCDIR)/$(TESTDIR)/
+	install -m 0755 $(TESTBIN) $(SRCDIR)/$(TESTDIR)/
 	install -m 0755 $(HELPERS) $(SRCDIR)/
 
 tar: $(SRCDIR)
