@@ -30,7 +30,7 @@ $(MAN): $(MANSRC) Makefile
 	    -e 's/@CRYEARS@/$(CRYEARS)/' <$< >$@
 
 $(MANWEB): $(MAN) Makefile
-	mandoc -T html $< >$@
+	man -l -Thtml $< >$@
 
 check: $(BINARY)
 	(cd tests; ./run_tests)
