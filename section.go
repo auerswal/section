@@ -64,6 +64,9 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_VERSION          = "display version and exit"
 )
 
+// compact name for a line printer function sugnature
+type line_printer func([]byte, uint64, bool) error
+
 // parameterize section algorithm
 type section_params struct {
 	// options
@@ -72,8 +75,8 @@ type section_params struct {
 	stdin_label  string
 	yaml_ind     bool
 	// actions performed by the section algorithm
-	in_sect_action  func([]byte, uint64, bool) error
-	out_sect_action func([]byte, uint64, bool) error
+	in_sect_action  line_printer
+	out_sect_action line_printer
 	// regular expressions matching indentation
 	ind_re      *regexp.Regexp
 	yaml_ind_re *regexp.Regexp
@@ -126,7 +129,7 @@ func version() {
 }
 
 // create a parameterized printer function
-func gen_printer(p printer_params, in_sect bool) func([]byte, uint64, bool) error {
+func gen_printer(p printer_params, in_sect bool) line_printer {
 	// no output
 	if p.quiet || (!p.omit && !in_sect) || (p.omit && in_sect) {
 		return func(l []byte, _ uint64, _ bool) (err error) {
