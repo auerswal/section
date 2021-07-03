@@ -132,7 +132,7 @@ func version() {
 func gen_printer(p printer_params, in_sect bool) line_printer {
 	// no output
 	if p.quiet || (!p.omit && !in_sect) || (p.omit && in_sect) {
-		return func(l []byte, _ uint64, _ bool) (err error) {
+		return func(_ []byte, _ uint64, _ bool) (err error) {
 			return nil
 		}
 	}
