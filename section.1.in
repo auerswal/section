@@ -58,11 +58,15 @@ was matched or not.
 Error messages are still printed.
 .SS \-\-separator
 Print a separator line between matched sections.
+This allows distinguishing separate sections in the output independent of the
+indentation of individual lines.
+The output produced when using this option is a simple form of stanza format
+without line continuations.
 .SS \-\-separator\-string SEPARATOR
 Use the given
 .I SEPARATOR
-instead of the default
-.B \-\-
+instead of the default of two ASCII hyphen characters
+.RB ( \-\- )
 when printing section separators.
 A newline is printed after the separator string.
 .SS \-\-with\-filename
