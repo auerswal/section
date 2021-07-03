@@ -133,14 +133,14 @@ func add_prefix(pre, lp line_printer) line_printer {
 	return func(l []byte, l_nr uint64, tr bool) (err error) {
 		err = pre(l, l_nr, tr)
 		if err != nil {
-			return err
+			return
 		}
 		return lp(l, l_nr, tr)
 	}
 }
 
 // create a parameterized printer function
-func gen_printer(p printer_params, in_sect bool) line_printer {
+func gen_printer(p printer_params, in_sect bool) (printer line_printer) {
 	// no output
 	if p.quiet || (!p.omit && !in_sect) || (p.omit && in_sect) {
 		return func(_ []byte, _ uint64, _ bool) (err error) {
@@ -148,26 +148,26 @@ func gen_printer(p printer_params, in_sect bool) line_printer {
 		}
 	}
 	// basic output
-	printer := func(l []byte, _ uint64, tr bool) (err error) {
+	printer = func(l []byte, _ uint64, tr bool) (err error) {
 		_, err = os.Stdout.Write(l)
 		if err != nil {
-			return err
+			return
 		}
 		_, err = os.Stdout.WriteString("\n")
-		return err
+		return
 	}
 	// prepend line number
 	if p.line_number {
 		printer = add_prefix(func(_ []byte, l_nr uint64, _ bool) (err error) {
 			_, err = fmt.Printf("%d:", l_nr)
-			return err
+			return
 		}, printer)
 	}
 	// prepend file name
 	if p.with_filename {
 		printer = add_prefix(func(_ []byte, _ uint64, _ bool) (err error) {
 			_, err = os.Stdout.WriteString(p.filename + ":")
-			return err
+			return
 		}, printer)
 	}
 	// print a separator between sections
@@ -180,13 +180,13 @@ func gen_printer(p printer_params, in_sect bool) line_printer {
 					p.separator_string + "\n")
 			}
 			if err != nil {
-				return err
+				return
 			}
 			first_output = false
 			return prev_printer(l, l_nr, tr)
 		}
 	}
-	return printer
+	return
 }
 
 // read input text and write matching sections to output
