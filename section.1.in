@@ -46,7 +46,15 @@ so that characters that differ only in case match each other.
 Match sections not starting with
 .IR PATTERN .
 .SS \-n, \-\-line\-number
-Prefix each output line with the line number in the respective input file.
+Prefix each output line with the line number in the respective input file,
+followed by a colon
+.RB ( : )
+as prefix separator.
+The line number is added after the file name when both options
+.B \-\-line\-number
+and
+.B \-\-with\-filename
+are given.
 .SS \-\-omit
 Omit matched sections,
 print everything else instead.
@@ -70,7 +78,14 @@ instead of the default of two ASCII hyphen characters
 when printing section separators.
 A newline is printed after the separator string.
 .SS \-\-with\-filename
-Prefix each output line with the file name.
+Prefix each output line with the file name, followed by a colon
+.RB ( : )
+as prefix separator.
+The file name is added in front of the line number when both options
+.B \-\-with\-filename
+and
+.B \-\-line\-number
+are given.
 .SS \-\-yaml
 Support YAML list indentation in addition to white space based indentation.
 
