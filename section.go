@@ -172,19 +172,17 @@ func gen_printer(p printer_params, in_sect bool) (printer line_printer) {
 	}
 	// print a separator between sections
 	if p.separator {
-		prev_printer := printer
 		first_output := true
-		printer = func(l []byte, l_nr uint64, tr bool) (err error) {
+		printer = add_prefix(func(_ []byte, _ uint64, tr bool) (err error) {
 			if !first_output && tr {
 				_, err = os.Stdout.WriteString(
 					p.separator_string + "\n")
 			}
-			if err != nil {
-				return
+			if err == nil {
+				first_output = false
 			}
-			first_output = false
-			return prev_printer(l, l_nr, tr)
-		}
+			return
+		}, printer)
 	}
 	return
 }
