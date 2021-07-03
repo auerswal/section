@@ -129,6 +129,7 @@ This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 
 .SH "SEE ALSO"
+.BR awk (1),
 .BR grep (1),
 .BR expand (1),
 .BR unexpand (1),
