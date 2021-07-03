@@ -128,6 +128,17 @@ func version() {
 	fmt.Println(COPYRIGHT)
 }
 
+// add a prefix to a line printer function
+func add_prefix(pre, lp line_printer) line_printer {
+	return func(l []byte, l_nr uint64, tr bool) (err error) {
+		err = pre(l, l_nr, tr)
+		if err != nil {
+			return err
+		}
+		return lp(l, l_nr, tr)
+	}
+}
+
 // create a parameterized printer function
 func gen_printer(p printer_params, in_sect bool) line_printer {
 	// no output
@@ -147,25 +158,17 @@ func gen_printer(p printer_params, in_sect bool) line_printer {
 	}
 	// prepend line number
 	if p.line_number {
-		prev_printer := printer
-		printer = func(l []byte, l_nr uint64, tr bool) (err error) {
+		printer = add_prefix(func(_ []byte, l_nr uint64, _ bool) (err error) {
 			_, err = fmt.Printf("%d:", l_nr)
-			if err != nil {
-				return err
-			}
-			return prev_printer(l, l_nr, tr)
-		}
+			return err
+		}, printer)
 	}
 	// prepend file name
 	if p.with_filename {
-		prev_printer := printer
-		printer = func(l []byte, l_nr uint64, tr bool) (err error) {
+		printer = add_prefix(func(_ []byte, _ uint64, _ bool) (err error) {
 			_, err = os.Stdout.WriteString(p.filename + ":")
-			if err != nil {
-				return err
-			}
-			return prev_printer(l, l_nr, tr)
-		}
+			return err
+		}, printer)
 	}
 	// print a separator between sections
 	if p.separator {
