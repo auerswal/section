@@ -45,6 +45,14 @@ so that characters that differ only in case match each other.
 .SS \-\-invert\-match
 Match sections not starting with
 .IR PATTERN .
+.SS \-\-label LABEL
+Use
+.I LABEL
+instead of the default of
+.B (standard input)
+in place of a file name for data from standard input when the
+.B \-\-with\-filename
+option is given.
 .SS \-n, \-\-line\-number
 Prefix each output line with the line number in the respective input file,
 followed by the prefix delimiter.

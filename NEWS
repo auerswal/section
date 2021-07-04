@@ -5,6 +5,7 @@ Version ?.?.? (????-??-??):
 ---------------------------
  * Documentation improvements
  * New option "--prefix-delimiter" to control the prefix delimiter
+ * New option "--label" to control file name replacement for standard input
 
 Version 0.0.11 (2021-06-22):
 ----------------------------

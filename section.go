@@ -61,6 +61,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_QUIET            = "suppress all normal output"
 	OD_SEPARATOR        = "print a separator line between sections"
 	OD_SEPARATOR_STRING = "specify separator string"
+	OD_STDIN_LABEL      = "label in place of file name for standard input"
 	OD_WITH_FILENAME    = "prefix output lines with file name"
 	OD_YAML_IND         = "additionally allow YAML list indentation"
 	OD_VERSION          = "display version and exit"
@@ -321,6 +322,8 @@ func main() {
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
+	flag.StringVar(&sp.stdin_label, "label", DEF_STDIN_LABEL,
+		OD_STDIN_LABEL)
 	flag.BoolVar(&pp.line_number, "line-number", false, OD_LINE_NUMBER)
 	flag.BoolVar(&pp.line_number, "n", false, OD_LINE_NUMBER)
 	flag.BoolVar(&pp.omit, "omit", false, OD_OMIT)
