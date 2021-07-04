@@ -55,7 +55,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_IGNORE_BLANK     = "continue sections over blank lines"
 	OD_IGNORE_CASE      = "ignore case distinctions"
 	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
-	OD_LINE_NUMBER      = "prefix output line with line number"
+	OD_LINE_NUMBER      = "prefix output lines with line number"
 	OD_OMIT             = "omit matched sections, print everything else"
 	OD_PREFIX_DELIM     = "string to delimit a prefix"
 	OD_QUIET            = "suppress all normal output"
