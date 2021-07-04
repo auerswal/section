@@ -4,6 +4,7 @@ Noteworthy Changes in section Releases
 Version ?.?.? (????-??-??):
 ---------------------------
  * Documentation improvements
+ * New option "--prefix-delimiter" to control the prefix delimiter
 
 Version 0.0.11 (2021-06-22):
 ----------------------------

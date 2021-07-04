@@ -47,9 +47,7 @@ Match sections not starting with
 .IR PATTERN .
 .SS \-n, \-\-line\-number
 Prefix each output line with the line number in the respective input file,
-followed by a colon
-.RB ( : )
-as prefix separator.
+followed by the prefix delimiter.
 The line number is added after the file name when both options
 .B \-\-line\-number
 and
@@ -58,6 +56,14 @@ are given.
 .SS \-\-omit
 Omit matched sections,
 print everything else instead.
+.SS \-\-prefix\-delimiter DELIMITER
+Use the given
+.I DELIMITER
+instead of the default of a colon
+.RB ( : )
+as prefix delimiter.
+.I DELIMITER
+need not be a single character.
 .SS \-q, \-\-quiet, \-\-silent
 Suppress all normal output.
 The exit code can be used to determine if the
@@ -78,9 +84,7 @@ instead of the default of two ASCII hyphen characters
 when printing section separators.
 A newline is printed after the separator string.
 .SS \-\-with\-filename
-Prefix each output line with the file name, followed by a colon
-.RB ( : )
-as prefix separator.
+Prefix each output line with the file name, followed by the prefix delimiter.
 The file name is added in front of the line number when both options
 .B \-\-with\-filename
 and

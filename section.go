@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.0.11"
+	VERSION = "0.0.12"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -42,8 +42,9 @@ const (
 	BLANK_RE    = `^[ \t]*$`
 	RE_IGN_CASE = `(?i)`
 	// default values
-	DEF_SEPARATOR   = "--"
-	DEF_STDIN_LABEL = "(standard input)"
+	DEF_PREFIX_DELIM = ":"
+	DEF_SEPARATOR    = "--"
+	DEF_STDIN_LABEL  = "(standard input)"
 	// documentation
 	DESC      = "prints indented text sections started by matching a regular expression."
 	COPYRIGHT = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
@@ -56,6 +57,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
 	OD_LINE_NUMBER      = "prefix output line with line number"
 	OD_OMIT             = "omit matched sections, print everything else"
+	OD_PREFIX_DELIM     = "string to delimit a prefix"
 	OD_QUIET            = "suppress all normal output"
 	OD_SEPARATOR        = "print a separator line between sections"
 	OD_SEPARATOR_STRING = "specify separator string"
@@ -90,6 +92,7 @@ type section_params struct {
 type printer_params struct {
 	line_number      bool
 	omit             bool
+	prefix_delim     string
 	quiet            bool
 	separator        bool
 	separator_string string
@@ -159,14 +162,15 @@ func gen_printer(p printer_params, in_sect bool) (printer line_printer) {
 	// prepend line number
 	if p.line_number {
 		printer = add_prefix(func(_ []byte, l_nr uint64, _ bool) (err error) {
-			_, err = fmt.Printf("%d:", l_nr)
+			_, err = fmt.Printf("%d%s", l_nr, p.prefix_delim)
 			return
 		}, printer)
 	}
 	// prepend file name
 	if p.with_filename {
 		printer = add_prefix(func(_ []byte, _ uint64, _ bool) (err error) {
-			_, err = os.Stdout.WriteString(p.filename + ":")
+			_, err = os.Stdout.WriteString(p.filename +
+				p.prefix_delim)
 			return
 		}, printer)
 	}
@@ -320,6 +324,8 @@ func main() {
 	flag.BoolVar(&pp.line_number, "line-number", false, OD_LINE_NUMBER)
 	flag.BoolVar(&pp.line_number, "n", false, OD_LINE_NUMBER)
 	flag.BoolVar(&pp.omit, "omit", false, OD_OMIT)
+	flag.StringVar(&pp.prefix_delim, "prefix-delimiter", DEF_PREFIX_DELIM,
+		OD_PREFIX_DELIM)
 	flag.BoolVar(&pp.quiet, "quiet", false, OD_QUIET)
 	flag.BoolVar(&pp.quiet, "q", false, OD_QUIET)
 	flag.BoolVar(&pp.quiet, "silent", false, OD_QUIET)
