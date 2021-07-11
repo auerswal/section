@@ -53,11 +53,11 @@ tar: $(SRCDIR)
 	tar cvfz $(ARCHIVE) $(SRCDIR)
 
 clean:
-	$(RM) $(BINARY) $(MAN) $(MANWEB)
+	$(RM) $(BINARY) $(MANWEB)
 	$(RM) -r $(SRCDIR)
 	$(RM) $(wildcard tests/*.out) tests/tests.log
 
 distclean: clean
-	$(RM) $(ARCHIVE)
+	$(RM) $(MAN) $(ARCHIVE)
 
 .PHONY: check clean install
