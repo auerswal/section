@@ -1,7 +1,7 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Version ?.?.? (????-??-??):
+Version 0.1.0 (2021-07-18):
 ---------------------------
  * Documentation improvements
  * New option "--prefix-delimiter" to control the prefix delimiter
