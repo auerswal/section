@@ -67,7 +67,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_VERSION          = "display version and exit"
 )
 
-// compact name for a line printer function sugnature
+// compact name for a line printer function signature
 type line_printer func([]byte, uint64, bool) error
 
 // parameterize section algorithm
