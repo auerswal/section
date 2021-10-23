@@ -60,4 +60,4 @@ clean:
 distclean: clean
 	$(RM) $(MAN) $(ARCHIVE)
 
-.PHONY: check clean install
+.PHONY: check clean distclean install
