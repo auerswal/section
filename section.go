@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.1.0"
+	VERSION = "0.2.0"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -57,6 +57,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
 	OD_LINE_NUMBER      = "prefix output lines with line number"
 	OD_OMIT             = "omit matched sections, print everything else"
+	OD_OMIT_IGNORED     = "omit lines ignored as section breaks"
 	OD_PREFIX_DELIM     = "string to delimit a prefix"
 	OD_QUIET            = "suppress all normal output"
 	OD_SEPARATOR        = "print a separator line between sections"
@@ -80,6 +81,8 @@ type section_params struct {
 	// actions performed by the section algorithm
 	in_sect_action  line_printer
 	out_sect_action line_printer
+	in_sect_ign     line_printer
+	out_sect_ign    line_printer
 	// regular expressions matching indentation
 	ind_re      *regexp.Regexp
 	yaml_ind_re *regexp.Regexp
@@ -140,6 +143,19 @@ func add_prefix(pre, lp line_printer) line_printer {
 			return
 		}
 		return lp(l, l_nr, tr)
+	}
+}
+
+// return printer parameters to generate a line_printer() that does not print
+func p_quiet() printer_params {
+	return printer_params{
+		line_number:      false,
+		omit:             false,
+		quiet:            true,
+		separator:        false,
+		separator_string: "",
+		with_filename:    false,
+		filename:         "",
 	}
 }
 
@@ -215,9 +231,9 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		// ignored lines do not cause a section transition
 		if p.ignore_re != nil && p.ignore_re.Match(l) {
 			if in_sect {
-				err = p.in_sect_action(l, l_nr, false)
+				err = p.in_sect_ign(l, l_nr, false)
 			} else {
-				err = p.out_sect_action(l, l_nr, false)
+				err = p.out_sect_ign(l, l_nr, false)
 			}
 			if err != nil {
 				log.Print(err)
@@ -339,6 +355,7 @@ func main() {
 		OD_WITH_FILENAME)
 	flag.BoolVar(&sp.yaml_ind, "yaml", false, OD_YAML_IND)
 	ignore_blank := flag.Bool("ignore-blank", false, OD_IGNORE_BLANK)
+	omit_ignored := flag.Bool("omit-ignored", false, OD_OMIT_IGNORED)
 	// parse command line flags
 	flag.Parse()
 
@@ -375,6 +392,13 @@ func main() {
 		pp.filename = sp.stdin_label
 		sp.in_sect_action = gen_printer(pp, true)
 		sp.out_sect_action = gen_printer(pp, false)
+		if *omit_ignored {
+			sp.out_sect_ign = gen_printer(p_quiet(), false)
+			sp.in_sect_ign = sp.out_sect_ign
+		} else {
+			sp.out_sect_ign = sp.out_sect_action
+			sp.in_sect_ign = sp.in_sect_action
+		}
 		m, err := section(sp, os.Stdin)
 		ec = exit_code(ec, m, err)
 	} else {
@@ -387,6 +411,13 @@ func main() {
 			pp.filename = arg
 			sp.in_sect_action = gen_printer(pp, true)
 			sp.out_sect_action = gen_printer(pp, false)
+			if *omit_ignored {
+				sp.out_sect_ign = gen_printer(p_quiet(), false)
+				sp.in_sect_ign = sp.out_sect_ign
+			} else {
+				sp.out_sect_ign = sp.out_sect_action
+				sp.in_sect_ign = sp.in_sect_action
+			}
 			m, err := section(sp, f)
 			ec = exit_code(ec, m, err)
 			f.Close()

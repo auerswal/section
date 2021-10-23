@@ -64,6 +64,8 @@ are given.
 .SS \-\-omit
 Omit matched sections,
 print everything else instead.
+.SS \-\-omit\-ignored
+Do not print lines that are ignored when determining section breaks.
 .SS \-\-prefix\-delimiter DELIMITER
 Use the given
 .I DELIMITER
