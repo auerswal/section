@@ -111,7 +111,7 @@ package, and thus understands the
 .I RE2
 syntax described at
 .UR https://golang.org/s/re2syntax
-.UE
+.UE .
 
 .SH EXIT STATUS
 .IP \(bu
