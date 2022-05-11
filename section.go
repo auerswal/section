@@ -1,6 +1,6 @@
 /*
    section - print sections of a text file matching a pattern
-   Copyright (C) 2019-2021  Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+   Copyright (C) 2019-2022  Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ const (
 	DEF_STDIN_LABEL  = "(standard input)"
 	// documentation
 	DESC      = "prints indented text sections started by matching a regular expression."
-	COPYRIGHT = `Copyright (C) 2019-2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+	COPYRIGHT = `Copyright (C) 2019-2022 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
@@ -69,7 +69,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 )
 
 // compact name for a line printer function signature
-type line_printer func([]byte, uint64, bool) error
+type line_printer func(*[]byte, uint64, bool) error
 
 // parameterize section algorithm
 type section_params struct {
@@ -137,7 +137,7 @@ func version() {
 
 // add a prefix to a line printer function
 func add_prefix(pre, lp line_printer) line_printer {
-	return func(l []byte, l_nr uint64, tr bool) (err error) {
+	return func(l *[]byte, l_nr uint64, tr bool) (err error) {
 		err = pre(l, l_nr, tr)
 		if err != nil {
 			return
@@ -163,13 +163,13 @@ func p_quiet() printer_params {
 func gen_printer(p printer_params, in_sect bool) (printer line_printer) {
 	// no output
 	if p.quiet || (!p.omit && !in_sect) || (p.omit && in_sect) {
-		return func(_ []byte, _ uint64, _ bool) (err error) {
+		return func(_ *[]byte, _ uint64, _ bool) (err error) {
 			return nil
 		}
 	}
 	// basic output
-	printer = func(l []byte, _ uint64, tr bool) (err error) {
-		_, err = os.Stdout.Write(l)
+	printer = func(l *[]byte, _ uint64, tr bool) (err error) {
+		_, err = os.Stdout.Write(*l)
 		if err != nil {
 			return
 		}
@@ -178,14 +178,14 @@ func gen_printer(p printer_params, in_sect bool) (printer line_printer) {
 	}
 	// prepend line number
 	if p.line_number {
-		printer = add_prefix(func(_ []byte, l_nr uint64, _ bool) (err error) {
+		printer = add_prefix(func(_ *[]byte, l_nr uint64, _ bool) (err error) {
 			_, err = fmt.Printf("%d%s", l_nr, p.prefix_delim)
 			return
 		}, printer)
 	}
 	// prepend file name
 	if p.with_filename {
-		printer = add_prefix(func(_ []byte, _ uint64, _ bool) (err error) {
+		printer = add_prefix(func(_ *[]byte, _ uint64, _ bool) (err error) {
 			_, err = os.Stdout.WriteString(p.filename +
 				p.prefix_delim)
 			return
@@ -194,7 +194,7 @@ func gen_printer(p printer_params, in_sect bool) (printer line_printer) {
 	// print a separator between sections
 	if p.separator {
 		first_output := true
-		printer = add_prefix(func(_ []byte, _ uint64, tr bool) (err error) {
+		printer = add_prefix(func(_ *[]byte, _ uint64, tr bool) (err error) {
 			if !first_output && tr {
 				_, err = os.Stdout.WriteString(
 					p.separator_string + "\n")
@@ -231,9 +231,9 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		// ignored lines do not cause a section transition
 		if p.ignore_re != nil && p.ignore_re.Match(l) {
 			if in_sect {
-				err = p.in_sect_ign(l, l_nr, false)
+				err = p.in_sect_ign(&l, l_nr, false)
 			} else {
-				err = p.out_sect_ign(l, l_nr, false)
+				err = p.out_sect_ign(&l, l_nr, false)
 			}
 			if err != nil {
 				log.Print(err)
@@ -259,13 +259,13 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			}
 			in_sect = true
 			matched = true
-			err = p.in_sect_action(l, l_nr, tr)
+			err = p.in_sect_action(&l, l_nr, tr)
 			if err != nil {
 				log.Print(err)
 				return
 			}
 		} else {
-			err = p.out_sect_action(l, l_nr, tr)
+			err = p.out_sect_action(&l, l_nr, tr)
 			if err != nil {
 				log.Print(err)
 				return
