@@ -1,0 +1,4 @@
+filename.line_nr.01.in:1:a
+filename.line_nr.01.in:2: b
+filename.line_nr.01.in.1:1:a
+filename.line_nr.01.in.1:2: c
