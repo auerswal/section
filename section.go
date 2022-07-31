@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.2.1"
+	VERSION = "0.2.2"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -68,9 +68,6 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_VERSION          = "display version and exit"
 )
 
-// compact name for a line printer function signature
-type line_printer func(*[]byte, uint64, bool) error
-
 // parameterize section algorithm
 type section_params struct {
 	// options
@@ -79,10 +76,8 @@ type section_params struct {
 	stdin_label  string
 	yaml_ind     bool
 	// actions performed by the section algorithm
-	in_sect_action  line_printer
-	out_sect_action line_printer
-	in_sect_ign     line_printer
-	out_sect_ign    line_printer
+	action *line_printer
+	ignore *line_printer
 	// regular expressions matching indentation
 	ind_re      *regexp.Regexp
 	yaml_ind_re *regexp.Regexp
@@ -92,16 +87,55 @@ type section_params struct {
 	pat_re *regexp.Regexp
 }
 
-// parameterize printer generator
-type printer_params struct {
-	line_number      bool
-	omit             bool
-	prefix_delim     string
-	quiet            bool
-	separator        bool
-	separator_string string
-	with_filename    bool
+// line printer object
+type line_printer struct {
+	// state
+	has_printed bool
+	quiet       bool
+	// values
 	filename         string
+	prefix_delim     string
+	separator_string string
+	// features
+	line_number   bool
+	omit          bool
+	separator     bool
+	with_filename bool
+}
+
+// method to possibly print a line, depending on state and parameters
+func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err error) {
+	if p.quiet || (p.omit && is) || (!p.omit && !is) {
+		return nil
+	}
+	if p.separator && p.has_printed && tr {
+		_, err = os.Stdout.WriteString(p.separator_string + "\n")
+		if err != nil {
+			return
+		}
+	}
+	if p.with_filename {
+		_, err = os.Stdout.WriteString(p.filename + p.prefix_delim)
+		if err != nil {
+			return
+		}
+	}
+	if p.line_number {
+		_, err = fmt.Printf("%d%s", nr, p.prefix_delim)
+		if err != nil {
+			return
+		}
+	}
+	_, err = os.Stdout.Write(*l)
+	if err != nil {
+		return
+	}
+	p.has_printed = true
+	_, err = os.Stdout.WriteString("\n")
+	if err != nil {
+		return
+	}
+	return
 }
 
 // print short usage information
@@ -135,79 +169,6 @@ func version() {
 	fmt.Println(COPYRIGHT)
 }
 
-// add a prefix to a line printer function
-func add_prefix(pre, lp line_printer) line_printer {
-	return func(l *[]byte, l_nr uint64, tr bool) (err error) {
-		err = pre(l, l_nr, tr)
-		if err != nil {
-			return
-		}
-		return lp(l, l_nr, tr)
-	}
-}
-
-// return printer parameters to generate a line_printer() that does not print
-func p_quiet() printer_params {
-	return printer_params{
-		line_number:      false,
-		omit:             false,
-		quiet:            true,
-		separator:        false,
-		separator_string: "",
-		with_filename:    false,
-		filename:         "",
-	}
-}
-
-// create a parameterized printer function
-func gen_printer(p printer_params, in_sect bool) (printer line_printer) {
-	// no output
-	if p.quiet || (!p.omit && !in_sect) || (p.omit && in_sect) {
-		return func(_ *[]byte, _ uint64, _ bool) (err error) {
-			return nil
-		}
-	}
-	// basic output
-	printer = func(l *[]byte, _ uint64, tr bool) (err error) {
-		_, err = os.Stdout.Write(*l)
-		if err != nil {
-			return
-		}
-		_, err = os.Stdout.WriteString("\n")
-		return
-	}
-	// prepend line number
-	if p.line_number {
-		printer = add_prefix(func(_ *[]byte, l_nr uint64, _ bool) (err error) {
-			_, err = fmt.Printf("%d%s", l_nr, p.prefix_delim)
-			return
-		}, printer)
-	}
-	// prepend file name
-	if p.with_filename {
-		printer = add_prefix(func(_ *[]byte, _ uint64, _ bool) (err error) {
-			_, err = os.Stdout.WriteString(p.filename +
-				p.prefix_delim)
-			return
-		}, printer)
-	}
-	// print a separator between sections
-	if p.separator {
-		first_output := true
-		printer = add_prefix(func(_ *[]byte, _ uint64, tr bool) (err error) {
-			if !first_output && tr {
-				_, err = os.Stdout.WriteString(
-					p.separator_string + "\n")
-			}
-			if err == nil {
-				first_output = false
-			}
-			return
-		}, printer)
-	}
-	return
-}
-
 // read input text and write matching sections to output
 func section(p section_params, r io.Reader) (matched bool, err error) {
 	matched = false    // return if something was matched
@@ -230,11 +191,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		l = s.Bytes()
 		// ignored lines do not cause a section transition
 		if p.ignore_re != nil && p.ignore_re.Match(l) {
-			if in_sect {
-				err = p.in_sect_ign(&l, l_nr, false)
-			} else {
-				err = p.out_sect_ign(&l, l_nr, false)
-			}
+			err = p.ignore.print_line(&l, l_nr, false, in_sect)
 			if err != nil {
 				log.Print(err)
 				return
@@ -259,20 +216,15 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			}
 			in_sect = true
 			matched = true
-			err = p.in_sect_action(&l, l_nr, tr)
-			if err != nil {
-				log.Print(err)
-				return
-			}
 		} else {
-			err = p.out_sect_action(&l, l_nr, tr)
-			if err != nil {
-				log.Print(err)
-				return
-			}
 			in_sect = false
 			s_ind = 0
 			s_y_ind = 0
+		}
+		err = p.action.print_line(&l, l_nr, tr, in_sect)
+		if err != nil {
+			log.Print(err)
+			return
 		}
 	}
 	err = s.Err()
@@ -311,8 +263,9 @@ func main() {
 		ignore_re:    nil,
 		pat_re:       nil,
 	}
-	// parameters for printer generator
-	pp := printer_params{
+	// default line printer
+	lp := line_printer{
+		has_printed:      false,
 		line_number:      false,
 		omit:             false,
 		quiet:            false,
@@ -321,6 +274,9 @@ func main() {
 		with_filename:    false,
 		filename:         "",
 	}
+	// line printer as normal and ignore action by default
+	sp.action = &lp
+	sp.ignore = &lp
 
 	// error logging
 	log.SetPrefix(PROG + ": ")
@@ -340,18 +296,18 @@ func main() {
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
 	flag.StringVar(&sp.stdin_label, "label", DEF_STDIN_LABEL,
 		OD_STDIN_LABEL)
-	flag.BoolVar(&pp.line_number, "line-number", false, OD_LINE_NUMBER)
-	flag.BoolVar(&pp.line_number, "n", false, OD_LINE_NUMBER)
-	flag.BoolVar(&pp.omit, "omit", false, OD_OMIT)
-	flag.StringVar(&pp.prefix_delim, "prefix-delimiter", DEF_PREFIX_DELIM,
+	flag.BoolVar(&lp.line_number, "line-number", false, OD_LINE_NUMBER)
+	flag.BoolVar(&lp.line_number, "n", false, OD_LINE_NUMBER)
+	flag.BoolVar(&lp.omit, "omit", false, OD_OMIT)
+	flag.StringVar(&lp.prefix_delim, "prefix-delimiter", DEF_PREFIX_DELIM,
 		OD_PREFIX_DELIM)
-	flag.BoolVar(&pp.quiet, "quiet", false, OD_QUIET)
-	flag.BoolVar(&pp.quiet, "q", false, OD_QUIET)
-	flag.BoolVar(&pp.quiet, "silent", false, OD_QUIET)
-	flag.BoolVar(&pp.separator, "separator", false, OD_SEPARATOR)
-	flag.StringVar(&pp.separator_string, "separator-string", DEF_SEPARATOR,
+	flag.BoolVar(&lp.quiet, "quiet", false, OD_QUIET)
+	flag.BoolVar(&lp.quiet, "q", false, OD_QUIET)
+	flag.BoolVar(&lp.quiet, "silent", false, OD_QUIET)
+	flag.BoolVar(&lp.separator, "separator", false, OD_SEPARATOR)
+	flag.StringVar(&lp.separator_string, "separator-string", DEF_SEPARATOR,
 		OD_SEPARATOR_STRING)
-	flag.BoolVar(&pp.with_filename, "with-filename", false,
+	flag.BoolVar(&lp.with_filename, "with-filename", false,
 		OD_WITH_FILENAME)
 	flag.BoolVar(&sp.yaml_ind, "yaml", false, OD_YAML_IND)
 	ignore_blank := flag.Bool("ignore-blank", false, OD_IGNORE_BLANK)
@@ -371,6 +327,12 @@ func main() {
 	if *ignore_blank {
 		sp.ignore_re = regexp.MustCompile(BLANK_RE)
 	}
+	if *omit_ignored {
+		no_output := line_printer{
+			quiet: true,
+		}
+		sp.ignore = &no_output
+	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {
 		usage_err(errors.New("PATTERN is missing"))
@@ -389,16 +351,7 @@ func main() {
 	// operate on STDIN if no file name is provided,
 	// otherwise operate on the given files
 	if flag.NArg() == 1 {
-		pp.filename = sp.stdin_label
-		sp.in_sect_action = gen_printer(pp, true)
-		sp.out_sect_action = gen_printer(pp, false)
-		if *omit_ignored {
-			sp.out_sect_ign = gen_printer(p_quiet(), false)
-			sp.in_sect_ign = sp.out_sect_ign
-		} else {
-			sp.out_sect_ign = sp.out_sect_action
-			sp.in_sect_ign = sp.in_sect_action
-		}
+		lp.filename = sp.stdin_label
 		m, err := section(sp, os.Stdin)
 		ec = exit_code(ec, m, err)
 	} else {
@@ -408,16 +361,7 @@ func main() {
 				log.Print(err)
 				continue
 			}
-			pp.filename = arg
-			sp.in_sect_action = gen_printer(pp, true)
-			sp.out_sect_action = gen_printer(pp, false)
-			if *omit_ignored {
-				sp.out_sect_ign = gen_printer(p_quiet(), false)
-				sp.in_sect_ign = sp.out_sect_ign
-			} else {
-				sp.out_sect_ign = sp.out_sect_action
-				sp.in_sect_ign = sp.in_sect_action
-			}
+			lp.filename = arg
 			m, err := section(sp, f)
 			ec = exit_code(ec, m, err)
 			f.Close()

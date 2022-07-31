@@ -1,6 +1,12 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Version 0.2.2 (2022-07-31):
+---------------------------
+ * Bug fix: when combining "--separator" with multiple input files, when
+   a section was printed, and then another section from another file was
+   printed, the separator between the output sections was missing.
+
 Version 0.2.1 (2021-10-23):
 ---------------------------
  * Include this file (NEWS) in the sources tar archive
