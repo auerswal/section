@@ -132,9 +132,6 @@ func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err e
 	}
 	p.has_printed = true
 	_, err = os.Stdout.WriteString("\n")
-	if err != nil {
-		return
-	}
 	return
 }
 
