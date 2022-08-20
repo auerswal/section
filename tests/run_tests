@@ -31,9 +31,6 @@ test -x "$FILTER" || {
 rm -f -- "$LOG"
 exec > >(tee "$LOG") 2>&1
 
-PASS=0
-FAIL=0
-
 incomplete_test() {
   printf -- '%s is an incomplete test, some files are missing\n' "$1"
 }
