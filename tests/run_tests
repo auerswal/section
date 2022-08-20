@@ -57,10 +57,10 @@ for T in *.opts; do
     incomplete_test "$NAME"
     exit 1
   }
-  EXP_EC=$(cat "${NAME}.ec")
+  EXP_EC=$(< "${NAME}.ec")
   RES=0
   read -ra ARGS < <(cat "$T")
-  "$FILTER" "${ARGS[@]}" "$(cat "$PAT")" "$IN" "${MOREIN[@]}" > "$OUT"
+  "$FILTER" "${ARGS[@]}" "$(< "$PAT")" "$IN" "${MOREIN[@]}" > "$OUT"
   EC=$?
   test "$EC" -eq "$EXP_EC" || {
     wrong_exit_code "$NAME" "$EXP_EC" "$EC"
