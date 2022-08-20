@@ -1,6 +1,11 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Version 0.2.3 (2022-08-20):
+---------------------------
+ * Bug fix: when using "--yaml", the depth of "YAML indentation" of lines
+   that are not YAML list items was always determined as zero.
+
 Version 0.2.2 (2022-07-31):
 ---------------------------
  * Bug fix: when combining "--separator" with multiple input files, when
