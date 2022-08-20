@@ -49,7 +49,7 @@ for T in *.opts; do
   NAME=${T%.opts}
   PAT="${NAME}.pat"
   IN="${NAME}.in"
-  MOREIN="${NAME}.in."*
+  MOREIN=( "${NAME}.in."* )
   OUT="${NAME}.out"
   EXP="${NAME}.exp"
   test -r "$PAT" && test -r "$IN" && test -r "$EXP" && test -r "${NAME}.ec" || {
@@ -58,7 +58,7 @@ for T in *.opts; do
   }
   EXP_EC=$(cat "${NAME}.ec")
   RES=0
-  "$FILTER" $(cat "$T") "$(cat "$PAT")" "$IN" $MOREIN > "$OUT"
+  "$FILTER" $(cat "$T") "$(cat "$PAT")" "$IN" "${MOREIN[@]}" > "$OUT"
   EC=$?
   test "$EC" -eq "$EXP_EC" || {
     wrong_exit_code "$NAME" "$EXP_EC" "$EC"
