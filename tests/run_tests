@@ -52,6 +52,7 @@ for T in *.opts; do
   MOREIN=( "${NAME}.in."* )
   OUT="${NAME}.out"
   EXP="${NAME}.exp"
+  # shellcheck disable=SC2015
   test -r "$PAT" && test -r "$IN" && test -r "$EXP" && test -r "${NAME}.ec" || {
     incomplete_test "$NAME"
     exit 1
