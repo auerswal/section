@@ -181,6 +181,8 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 	var l []byte       // one line of input data
 	var l_nr uint64    // current line number
 	var tr bool        // transition into or out of section?
+
+	// process input line by line
 	s := bufio.NewScanner(r)
 	s.Buffer(buf, ARB_BUF_LIM)
 	for s.Scan() {
@@ -195,17 +197,22 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			}
 			continue
 		}
+		// determine indentation depth of current line
 		c_ind = len(p.ind_re.Find(l))
 		if p.yaml_ind {
 			c_y_ind = len(p.yaml_ind_re.Find(l))
 		}
+		// check if current line matches pattern
 		pat_match = p.pat_re.Match(l)
 		if p.invert_match {
 			pat_match = !pat_match
 		}
+		// is this line a continuation of a section?
 		cont_sect = in_sect && (c_ind > s_ind ||
 			(s_y_ind >= s_ind && c_y_ind > s_y_ind))
+		// is this line a transition out of and/or into a section?
 		tr = (in_sect && !cont_sect) || (!in_sect && pat_match)
+		// update section state variables
 		if pat_match || cont_sect {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
@@ -218,6 +225,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			s_ind = 0
 			s_y_ind = 0
 		}
+		// invoke line action according to current state
 		err = p.action.print_line(&l, l_nr, tr, in_sect)
 		if err != nil {
 			log.Print(err)
