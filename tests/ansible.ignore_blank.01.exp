@@ -1,0 +1,92 @@
+  tasks:
+  - name: 'Query devices via OOB interface'
+    tags: [ 'get' ]
+    ios_command:
+      commands: 'show cdp neighbors detail'
+    register: cdp
+  - name: '+++ DEBUG +++ Print CDP neighbor information'
+    tags: [ 'debug_get' ]
+    debug: var=cdp
+  - name: 'Delete directory for CDP neighbor information'
+    tags: [ 'get' ]
+    run_once: true
+    file:
+      path: '{{cdp_info_dir}}'
+      state: absent
+  - name: 'Create directory for CDP neighbor information'
+    tags: [ 'get' ]
+    run_once: true
+    file:
+      path: '{{cdp_info_dir}}'
+      state: directory
+  - name: 'Write CDP neighbor information to file'
+    tags: [ 'get' ]
+    copy:
+      # the empty line at the end ensures a newline at the end of the last
+      # output line (required for POSIX text files)
+      content: |
+        {{cdp.stdout[0]}}
+        {{''}}
+      dest: '{{cdp_info_dir}}/{{inventory_hostname}}'
+  - name: 'Read CDP neighbor information from file'
+    tags: [ 'parse' ]
+    set_fact:
+      cdp_data: '{{lookup("file", cdp_info_dir + "/" + inventory_hostname)}}'
+  - name: '+++ DEBUG +++ Print CDP data read from file'
+    tags: [ 'debug_parse' ]
+    debug: var=cdp_data
+  - name: 'Parse CDP data using TextFSM'
+    tags: [ 'parse' ]
+    set_fact:
+      cdp_neighbors: >
+        {{cdp_data |
+        parse_cli_textfsm("playbooks/cdp_neighbors_detail.textfsm")}}
+  - name: '+++ DEBUG +++ Parse CDP data with TextFSM and print result'
+    tags: [ 'debug_parse' ]
+    debug: var=cdp_neighbors
+  - name: '+++ DEBUG +++ Write Ansible variables to a file'
+    tags: [ 'debug_ansible' ]
+    run_once: true
+    copy:
+      content: |
+        Module Variables (vars):
+        ------------------------
+        {{vars | to_nice_yaml}}
+
+        Environment Variables (environment):
+        ------------------------------------
+        {{environment | to_nice_yaml}}
+
+        Group Names (group_names):
+        --------------------------
+        {{group_names | to_nice_yaml}}
+
+        Host Variables (hostvars):
+        --------------------------
+        {{hostvars | to_nice_yaml}}
+      dest: './debug-ansible_variables.yml'
+  - name: 'Delete directory for graph files'
+    tags: [ 'graph' ]
+    run_once: true
+    file:
+      path: '{{out_dir}}'
+      state: absent
+  - name: 'Create directory for graph files'
+    tags: [ 'graph' ]
+    run_once: true
+    file:
+      path: '{{out_dir}}'
+      state: directory
+  - name: 'Create DOT language description of topology'
+    tags: [ 'graph' ]
+    run_once: true
+    template:
+      src: '{{connectivity_prefix}}.j2'
+      dest: '{{out_dir}}/{{connectivity_prefix}}.gv'
+  - name: 'Render PNG image from DOT language topology description'
+    tags: [ 'graph' ]
+    run_once: true
+    command: >
+      dot -Tpng -o{{out_dir}}/{{connectivity_prefix}}.png
+                  {{out_dir}}/{{connectivity_prefix}}.gv
+

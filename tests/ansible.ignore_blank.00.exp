@@ -1,0 +1,40 @@
+    file:
+      path: '{{cdp_info_dir}}'
+      state: absent
+    file:
+      path: '{{cdp_info_dir}}'
+      state: directory
+    copy:
+      # the empty line at the end ensures a newline at the end of the last
+      # output line (required for POSIX text files)
+      content: |
+        {{cdp.stdout[0]}}
+        {{''}}
+      dest: '{{cdp_info_dir}}/{{inventory_hostname}}'
+    copy:
+      content: |
+        Module Variables (vars):
+        ------------------------
+        {{vars | to_nice_yaml}}
+
+        Environment Variables (environment):
+        ------------------------------------
+        {{environment | to_nice_yaml}}
+
+        Group Names (group_names):
+        --------------------------
+        {{group_names | to_nice_yaml}}
+
+        Host Variables (hostvars):
+        --------------------------
+        {{hostvars | to_nice_yaml}}
+      dest: './debug-ansible_variables.yml'
+    file:
+      path: '{{out_dir}}'
+      state: absent
+    file:
+      path: '{{out_dir}}'
+      state: directory
+    template:
+      src: '{{connectivity_prefix}}.j2'
+      dest: '{{out_dir}}/{{connectivity_prefix}}.gv'
