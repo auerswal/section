@@ -32,19 +32,38 @@ Options can be used to modify the operation of
 uses Go's
 .I flag
 package for option processing.
+
+.SS Print information about the section binary:
+.TP
 .SS \-h, \-\-help
 Write a help message to standard output.
+.TP
 .SS \-V, \-\-version
 Write version information to standard output.
-.SS \-\-ignore\-blank
-Ignore the indentation level of blank lines,
-so that sections always continue across them.
+
+.SS Control pattern matching:
+.TP
 .SS \-i, \-\-ignore\-case
 Ignore case distinctions for pattern matching,
 so that characters that differ only in case match each other.
+.TP
 .SS \-\-invert\-match
-Match sections not starting with
+Match sections
+.B not
+starting with
 .IR PATTERN .
+
+.SS Control section boundary determination:
+.TP
+.SS \-\-ignore\-blank
+Ignore the indentation level of blank lines,
+so that sections always continue across them.
+.TP
+.SS \-\-yaml
+Support YAML list indentation in addition to white space based indentation.
+
+.SS Control output format:
+.TP
 .SS \-\-label LABEL
 Use
 .I LABEL
@@ -53,6 +72,7 @@ instead of the default of
 in place of a file name for data from standard input when the
 .B \-\-with\-filename
 option is given.
+.TP
 .SS \-n, \-\-line\-number
 Prefix each output line with the line number in the respective input file,
 followed by the prefix delimiter.
@@ -61,11 +81,14 @@ The line number is added after the file name when both options
 and
 .B \-\-with\-filename
 are given.
+.TP
 .SS \-\-omit
 Omit matched sections,
 print everything else instead.
+.TP
 .SS \-\-omit\-ignored
 Do not print lines that are ignored when determining section breaks.
+.TP
 .SS \-\-prefix\-delimiter DELIMITER
 Use the given
 .I DELIMITER
@@ -74,18 +97,21 @@ instead of the default of a colon
 as prefix delimiter.
 .I DELIMITER
 need not be a single character.
+.TP
 .SS \-q, \-\-quiet, \-\-silent
 Suppress all normal output.
 The exit code can be used to determine if the
 .I PATTERN
 was matched or not.
 Error messages are still printed.
+.TP
 .SS \-\-separator
 Print a separator line between matched sections.
 This allows distinguishing separate sections in the output independent of the
 indentation of individual lines.
 The output produced when using this option is a simple form of stanza format
 without line continuations.
+.TP
 .SS \-\-separator\-string SEPARATOR
 Use the given
 .I SEPARATOR
@@ -93,6 +119,7 @@ instead of the default of two ASCII hyphen characters
 .RB ( \-\- )
 when printing section separators.
 A newline is printed after the separator string.
+.TP
 .SS \-\-with\-filename
 Prefix each output line with the file name, followed by the prefix delimiter.
 The file name is added in front of the line number when both options
@@ -100,8 +127,6 @@ The file name is added in front of the line number when both options
 and
 .B \-\-line\-number
 are given.
-.SS \-\-yaml
-Support YAML list indentation in addition to white space based indentation.
 
 .SH "REGULAR EXPRESSIONS"
 .B section

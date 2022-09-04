@@ -1,6 +1,10 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Upcoming Version ?.?.? (???-??-??):
+-----------------------------------
+ * Documentation: group option descriptions in man page according to function
+
 Version 0.2.3 (2022-08-20):
 ---------------------------
  * Bug fix: when using "--yaml", the depth of "YAML indentation" of lines
