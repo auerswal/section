@@ -8,6 +8,7 @@ section \- print indented text sections selected via matching a pattern
 .I [OPTIONS] PATTERN [FILE...]
 
 .SH DESCRIPTION
+By default,
 .B section
 searches for
 .I PATTERN
