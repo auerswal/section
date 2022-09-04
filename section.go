@@ -260,24 +260,13 @@ func main() {
 
 	// parameters for section algorithm
 	sp := section_params{
-		ignore_case:  false,
-		invert_match: false,
-		stdin_label:  DEF_STDIN_LABEL,
-		yaml_ind:     false,
-		ind_re:       regexp.MustCompile(IND_RE),
-		yaml_ind_re:  regexp.MustCompile(YAML_IND_RE),
-		ignore_re:    nil,
-		pat_re:       nil,
+		stdin_label: DEF_STDIN_LABEL,
+		ind_re:      regexp.MustCompile(IND_RE),
+		yaml_ind_re: regexp.MustCompile(YAML_IND_RE),
 	}
 	// default line printer
 	lp := line_printer{
-		has_printed:      false,
-		line_number:      false,
-		omit:             false,
-		quiet:            false,
-		separator:        false,
 		separator_string: DEF_SEPARATOR,
-		with_filename:    false,
 		filename:         "",
 	}
 	// line printer as normal and ignore action by default
