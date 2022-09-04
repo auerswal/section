@@ -1,7 +1,7 @@
 .TH section 1 "@DATE@" @VERSION@ "print indented sections"
 
 .SH NAME
-section \- print indented text sections started by matching a pattern
+section \- print indented text sections selected via matching a pattern
 
 .SH SYNOPSIS
 .B section
