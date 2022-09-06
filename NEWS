@@ -3,7 +3,8 @@ Noteworthy Changes in section Releases
 
 Upcoming Version ?.?.? (???-??-??):
 -----------------------------------
- * Documentation: group option descriptions in man page according to function
+ * Documentation: option descriptions in the man page are now grouped
+   according to function
 
 Version 0.2.3 (2022-08-20):
 ---------------------------
