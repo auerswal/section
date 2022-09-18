@@ -1,8 +1,20 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Upcoming Version ?.?.? (???-??-??):
------------------------------------
+Version 0.3.0 (2022-09-18):
+---------------------------
+ * Behavior change: more consistent --yaml handling of dicts as list
+   items.  Before, when the pattern matched the line containing the
+   list indication ("- "), i.e., the first line of the list item, the
+   complete list item, i.e., the complete dict, was printed.  But when
+   the pattern matched any other line of the list item, e.g., any other
+   key of the dict, only that key (with its value) would be printed.
+   Thus the order of the keys in the dict would have influenced if the
+   whole dict or just part of the dict would be printed.
+   Now, when matching a key of a dict that is a list item, only the
+   matching dict key and its value is printed, even if the matched line
+   is the first line of a list item.  This is consistent with matching
+   keys of dicts that are not list items.
  * Documentation: option descriptions in the man page are now grouped
    according to function
 

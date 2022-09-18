@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.2.3"
+	VERSION = "0.3.0"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -74,13 +74,11 @@ type section_params struct {
 	ignore_case  bool
 	invert_match bool
 	stdin_label  string
-	yaml_ind     bool
 	// actions performed by the section algorithm
 	action *line_printer
 	ignore *line_printer
 	// regular expressions matching indentation
-	ind_re      *regexp.Regexp
-	yaml_ind_re *regexp.Regexp
+	ind_re *regexp.Regexp
 	// regular expression matching lines to ignore
 	ignore_re *regexp.Regexp
 	// regular expression matching sections
@@ -175,8 +173,6 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 	pat_match := false // does current line match pattern?
 	s_ind := 0         // indentation depth of current section
 	c_ind := 0         // indentation depth of current line
-	s_y_ind := 0       // YAML indentation depth of current section
-	c_y_ind := 0       // YAML indentation depth of current line
 	var buf []byte     // buffer space to hold input data
 	var l []byte       // one line of input data
 	var l_nr uint64    // current line number
@@ -199,17 +195,13 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		}
 		// determine indentation depth of current line
 		c_ind = len(p.ind_re.Find(l))
-		if p.yaml_ind {
-			c_y_ind = len(p.yaml_ind_re.Find(l))
-		}
 		// check if current line matches pattern
 		pat_match = p.pat_re.Match(l)
 		if p.invert_match {
 			pat_match = !pat_match
 		}
 		// is the current line a continuation of a section?
-		cont_sect = in_sect && (c_ind > s_ind ||
-			(s_y_ind >= s_ind && c_y_ind > s_y_ind))
+		cont_sect = in_sect && (c_ind > s_ind)
 		// is the current line a transition out of / into a section,
 		// or from one section into another?
 		tr = (in_sect && !cont_sect) || (!in_sect && pat_match)
@@ -217,14 +209,12 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		if pat_match || cont_sect {
 			if !in_sect || c_ind < s_ind {
 				s_ind = c_ind
-				s_y_ind = c_y_ind
 			}
 			in_sect = true
 			matched = true
 		} else {
 			in_sect = false
 			s_ind = 0
-			s_y_ind = 0
 		}
 		// invoke line action according to current situation
 		err = p.action.print_line(&l, l_nr, tr, in_sect)
@@ -262,7 +252,6 @@ func main() {
 	sp := section_params{
 		stdin_label: DEF_STDIN_LABEL,
 		ind_re:      regexp.MustCompile(IND_RE),
-		yaml_ind_re: regexp.MustCompile(YAML_IND_RE),
 	}
 	// default line printer
 	lp := line_printer{
@@ -304,7 +293,7 @@ func main() {
 		OD_SEPARATOR_STRING)
 	flag.BoolVar(&lp.with_filename, "with-filename", false,
 		OD_WITH_FILENAME)
-	flag.BoolVar(&sp.yaml_ind, "yaml", false, OD_YAML_IND)
+	yaml_ind := flag.Bool("yaml", false, OD_YAML_IND)
 	ignore_blank := flag.Bool("ignore-blank", false, OD_IGNORE_BLANK)
 	omit_ignored := flag.Bool("omit-ignored", false, OD_OMIT_IGNORED)
 	// parse command line flags
@@ -327,6 +316,9 @@ func main() {
 			quiet: true,
 		}
 		sp.ignore = &no_output
+	}
+	if *yaml_ind {
+		sp.ind_re = regexp.MustCompile(YAML_IND_RE)
 	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {

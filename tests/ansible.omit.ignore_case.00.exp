@@ -58,6 +58,12 @@
       cdp_neighbors: >
         {{cdp_data |
         parse_cli_textfsm("playbooks/cdp_neighbors_detail.textfsm")}}
+    run_once: true
+    copy:
+      content: |
+        Module Variables (vars):
+        ------------------------
+        {{vars | to_nice_yaml}}
 
         Environment Variables (environment):
         ------------------------------------

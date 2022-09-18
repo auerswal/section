@@ -58,6 +58,24 @@
       cdp_neighbors: >
         {{cdp_data |
         parse_cli_textfsm("playbooks/cdp_neighbors_detail.textfsm")}}
+    run_once: true
+    copy:
+      content: |
+        Module Variables (vars):
+        ------------------------
+        {{vars | to_nice_yaml}}
+
+        Environment Variables (environment):
+        ------------------------------------
+        {{environment | to_nice_yaml}}
+
+        Group Names (group_names):
+        --------------------------
+        {{group_names | to_nice_yaml}}
+
+        Host Variables (hostvars):
+        --------------------------
+        {{hostvars | to_nice_yaml}}
   - name: 'Delete directory for graph files'
     tags: [ 'graph' ]
     run_once: true
