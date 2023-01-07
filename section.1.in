@@ -112,6 +112,10 @@ This allows distinguishing separate sections in the output independent of the
 indentation of individual lines.
 The output produced when using this option is a simple form of stanza format
 without line continuations.
+.IP
+When used together with
+.BR \-\-omit ,
+consecutively omitted sections are indicated by a single separator line.
 .TP
 .SS \-\-separator\-string SEPARATOR
 Use the given
