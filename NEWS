@@ -1,6 +1,13 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Version ?.?.? (????-??-??):
+---------------------------
+ * Bug fix: when combining "--separator" and "--omit" together with
+   multiple input files, when a section at the end of an input file was
+   omitted, and the next file started outside a section, the separator
+   between the output sections was missing.
+
 Version 0.3.0 (2022-09-18):
 ---------------------------
  * Behavior change: more consistent --yaml handling of dicts as list

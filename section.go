@@ -90,6 +90,7 @@ type line_printer struct {
 	// state
 	has_printed bool
 	quiet       bool
+	is_printing bool
 	// values
 	filename         string
 	prefix_delim     string
@@ -104,9 +105,10 @@ type line_printer struct {
 // method to possibly print a line, depending on state and parameters
 func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err error) {
 	if p.quiet || (p.omit && is) || (!p.omit && !is) {
+		p.is_printing = false
 		return nil
 	}
-	if p.separator && p.has_printed && tr {
+	if p.separator && p.has_printed && (tr || (!p.is_printing && p.omit)) {
 		_, err = os.Stdout.WriteString(p.separator_string + "\n")
 		if err != nil {
 			return
@@ -129,6 +131,7 @@ func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err e
 		return
 	}
 	p.has_printed = true
+	p.is_printing = true
 	_, err = os.Stdout.WriteString("\n")
 	return
 }
