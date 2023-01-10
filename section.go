@@ -83,6 +83,8 @@ type section_params struct {
 	ignore_re *regexp.Regexp
 	// regular expression matching sections
 	pat_re *regexp.Regexp
+	// memory for processed lines
+	memory *line_memory
 }
 
 // line printer object
@@ -136,6 +138,64 @@ func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err e
 	return
 }
 
+// one line with added information
+type line struct {
+	l_ind int    // indentation level of this line
+	s_ind int    // indentation level of section this line is in
+	nr    uint64 // line number
+	data  []byte // the bytes constituting the line itself
+}
+
+// a collection of lines with added information
+type line_memory struct {
+	lines *[]line
+}
+
+// add a line to the collection
+func (lm *line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
+	new_line := line{
+		l_ind: l_ind,
+		s_ind: s_ind,
+		nr:    nr,
+	}
+	new_line.data = make([]byte, len(*l))
+	copy(new_line.data, *l)
+	if lm.lines == nil {
+		lm.lines = new([]line)
+	}
+	tmp := append(*lm.lines, new_line)
+	lm.lines = &tmp
+	return s_ind
+}
+
+// print contents of a line collection and clear it
+func (lm *line_memory) flush(act, ign *line_printer) (err error) {
+	prev_sect := false
+	in_sect := false
+	cont_sect := false
+	new_sect := false
+	for _, l := range *lm.lines {
+		// ignore lines with unspecified indentation level
+		if l.l_ind == -1 {
+			err = ign.print_line(&l.data, l.nr, false, in_sect)
+			if err != nil {
+				break
+			}
+			continue
+		}
+		in_sect = l.s_ind > -1
+		cont_sect = in_sect && l.l_ind > l.s_ind
+		new_sect = in_sect && !cont_sect && !prev_sect
+		prev_sect = in_sect
+		err = act.print_line(&l.data, l.nr, new_sect, in_sect)
+		if err != nil {
+			break
+		}
+	}
+	lm.lines = nil
+	return
+}
+
 // print short usage information
 func usage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s [OPTION...] PATTERN [FILE...]\n", PROG)
@@ -174,12 +234,12 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 	in_sect := false   // currently inside a section?
 	cont_sect := false // continue the current section?
 	pat_match := false // does current line match pattern?
-	s_ind := 0         // indentation depth of current section
-	c_ind := 0         // indentation depth of current line
+	s_ind := -1        // indentation depth of current section
+	c_ind := -1        // indentation depth of current line
+	min_ind := -1      // minimal indentation level seen so far
 	var buf []byte     // buffer space to hold input data
 	var l []byte       // one line of input data
 	var l_nr uint64    // current line number
-	var tr bool        // transition into or out of section?
 
 	// process input line by line
 	s := bufio.NewScanner(r)
@@ -189,15 +249,22 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		l = s.Bytes()
 		// ignored lines do not cause a section transition
 		if p.ignore_re != nil && p.ignore_re.Match(l) {
-			err = p.ignore.print_line(&l, l_nr, false, in_sect)
-			if err != nil {
-				log.Print(err)
-				return
-			}
+			p.memory.add(&l, l_nr, -1, -1)
 			continue
 		}
 		// determine indentation depth of current line
 		c_ind = len(p.ind_re.Find(l))
+		// print a completed top level section
+		if min_ind > -1 || c_ind <= min_ind {
+			min_ind = c_ind
+			err = p.memory.flush(p.action, p.ignore)
+			if err != nil {
+				log.Print(s.Err())
+				return
+			}
+		} else if min_ind == -1 {
+			min_ind = c_ind
+		}
 		// check if current line matches pattern
 		pat_match = p.pat_re.Match(l)
 		if p.invert_match {
@@ -205,26 +272,23 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		}
 		// is the current line a continuation of a section?
 		cont_sect = in_sect && (c_ind > s_ind)
-		// is the current line a transition out of / into a section,
-		// or from one section into another?
-		tr = (in_sect && !cont_sect) || (!in_sect && pat_match)
-		// update section state variables
-		if pat_match || cont_sect {
-			if !in_sect || c_ind < s_ind {
+		if !cont_sect {
+			if pat_match {
+				matched = true
+				in_sect = true
 				s_ind = c_ind
+			} else {
+				in_sect = false
+				s_ind = -1
 			}
-			in_sect = true
-			matched = true
-		} else {
-			in_sect = false
-			s_ind = 0
 		}
-		// invoke line action according to current situation
-		err = p.action.print_line(&l, l_nr, tr, in_sect)
-		if err != nil {
-			log.Print(err)
-			return
-		}
+		// add current line to memory
+		s_ind = p.memory.add(&l, l_nr, c_ind, s_ind)
+	}
+	// print last top level section
+	err = p.memory.flush(p.action, p.ignore)
+	if err != nil {
+		log.Print(s.Err())
 	}
 	err = s.Err()
 	if err != nil {
@@ -255,6 +319,7 @@ func main() {
 	sp := section_params{
 		stdin_label: DEF_STDIN_LABEL,
 		ind_re:      regexp.MustCompile(IND_RE),
+		memory:      new(line_memory),
 	}
 	// default line printer
 	lp := line_printer{
