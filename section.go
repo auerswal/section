@@ -160,6 +160,7 @@ type simple_line_memory struct {
 
 // add a line to the collection according to simple ("memoryless") rules
 func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
+	// create a new data structure for the line
 	new_line := line{
 		l_ind: l_ind,
 		s_ind: s_ind,
@@ -167,11 +168,16 @@ func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 	}
 	new_line.data = make([]byte, len(*l))
 	copy(new_line.data, *l)
+	// ensure existence of lines slice to allow appending a line
 	if lm.lines == nil {
 		lm.lines = new([]line)
 	}
+	// append the line
 	tmp := append(*lm.lines, new_line)
 	lm.lines = &tmp
+	// the simple ("memoryless") section algorithm does not adjust meta
+	// data of previous lines, and does not adjust the section indentation
+	// level
 	return s_ind
 }
 
