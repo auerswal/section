@@ -1,0 +1,25 @@
+!
+# This file is patterned after widely used router configuration files,
+# but not intended to actually work on any existing router.  Used with
+# different patterns and option to provide more realistic test cases.
+!
+hostname router42
+!
+ip domain name example
+ip name-server 192.0.2.13
+ipv6 name-server 2001:db8:4711::13
+!
+!
+!
+!
+interface Ethernet3
+ description BGP peering
+ ip address 192.0.2.0/31
+ ipv6 address 2001:db8::42/64
+!
+!
+!
+!
+!
+!
+ipv6 route 2001:db8:5009::/64 Null0
