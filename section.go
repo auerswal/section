@@ -218,24 +218,8 @@ type top_level_lm struct {
 }
 
 // add a line to the collection according to "top level" section rules
-// XXX there should be a way to avoid duplicating the code that only adds
-// XXX the line, but does not adjust existing line meta data...
 func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
-	// create a new data structure for the line
-	new_line := line{
-		l_ind: l_ind,
-		s_ind: s_ind,
-		nr:    nr,
-	}
-	new_line.data = make([]byte, len(*l))
-	copy(new_line.data, *l)
-	// ensure existence of lines slice to allow appending a line
-	if lm.lines == nil {
-		lm.lines = new([]line)
-	}
-	// append the line
-	tmp := append(*lm.lines, new_line)
-	lm.lines = &tmp
+	_ = lm.simple_line_memory.add(l, nr, l_ind, s_ind)
 	// ignored lines do not affect section meta data
 	if l_ind == -1 {
 		return s_ind
