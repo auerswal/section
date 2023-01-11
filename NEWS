@@ -1,6 +1,11 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Upcoming Version ?.?.? (???-??-??):
+-----------------------------------
+ * New option "--top-level" to let sections start from "top" (minimum)
+   indentation level
+
 Version 0.3.1 (2023-01-08):
 ---------------------------
  * Bug fix: when combining "--separator" and "--omit" together with

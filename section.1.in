@@ -8,18 +8,23 @@ section \- print indented text sections selected via matching a pattern
 .I [OPTIONS] PATTERN [FILE...]
 
 .SH DESCRIPTION
-By default,
+The
 .B section
-searches for
+filter searches for
 .I PATTERN
 in each
 .I FILE
 (or standard input if no
 .I FILE
-is given), and prints the matching lines,
-as well as any directly following lines indented deeper than the preceding
-matching line,
+is given), and prints the sections determined by matching lines
+and the selected algorithm variant
 to standard output.
+.P
+A section comprises all deeper indented lines directly following the
+starting line of the section.
+.P
+By default, sections are started by lines matching the
+.IR PATTERN .
 .P
 .I PATTERN
 is a regular expression, see section
@@ -59,6 +64,16 @@ starting with
 .SS \-\-ignore\-blank
 Ignore the indentation level of blank lines,
 so that sections always continue across them.
+.TP
+.SS \-\-top\-level
+Sections always start from the
+.I top
+.IR level ,
+i.e., the minimum indentation level, instead of from the line matching the
+.IR PATTERN .
+A line matching the
+.I PATTERN
+selects the complete top level section.
 .TP
 .SS \-\-yaml
 Support YAML list indentation in addition to white space based indentation.

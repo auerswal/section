@@ -63,6 +63,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_SEPARATOR        = "print a separator line between sections"
 	OD_SEPARATOR_STRING = "specify separator string"
 	OD_STDIN_LABEL      = "label in place of file name for standard input"
+	OD_TOP_LEVEL        = "sections start from minimum indentation level"
 	OD_WITH_FILENAME    = "prefix output lines with file name"
 	OD_YAML_IND         = "additionally allow YAML list indentation"
 	OD_VERSION          = "display version and exit"
@@ -210,6 +211,61 @@ func (lm *simple_line_memory) flush(act, ign *line_printer) (err error) {
 	return
 }
 
+// a collection of lines with added information for the "top level"
+// section algorithm
+type top_level_lm struct {
+	simple_line_memory
+}
+
+// add a line to the collection according to "top level" section rules
+// XXX there should be a way to avoid duplicating the code that only adds
+// XXX the line, but does not adjust existing line meta data...
+func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
+	// create a new data structure for the line
+	new_line := line{
+		l_ind: l_ind,
+		s_ind: s_ind,
+		nr:    nr,
+	}
+	new_line.data = make([]byte, len(*l))
+	copy(new_line.data, *l)
+	// ensure existence of lines slice to allow appending a line
+	if lm.lines == nil {
+		lm.lines = new([]line)
+	}
+	// append the line
+	tmp := append(*lm.lines, new_line)
+	lm.lines = &tmp
+	// ignored lines do not affect section meta data
+	if l_ind == -1 {
+		return s_ind
+	}
+	// only pattern match can affect section meta data
+	if l_ind != s_ind {
+		return s_ind
+	}
+	// all saved lines are part of the current section, and
+	// the current section has the indentation level of the first
+	// non-ignored line
+	min_ind := -1
+	for i := range *lm.lines {
+		// section has indentation level of first non-ignored line
+		if (*lm.lines)[i].l_ind == -1 {
+			continue
+		}
+		if min_ind == -1 {
+			min_ind = (*lm.lines)[i].l_ind
+		}
+		(*lm.lines)[i].s_ind = min_ind
+	}
+	return min_ind
+}
+
+// use .flush() method from simple ("memoryless") line memory
+func (lm *top_level_lm) flush(act, ign *line_printer) (err error) {
+	return lm.simple_line_memory.flush(act, ign)
+}
+
 // print short usage information
 func usage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s [OPTION...] PATTERN [FILE...]\n", PROG)
@@ -335,7 +391,6 @@ func main() {
 	sp := section_params{
 		stdin_label: DEF_STDIN_LABEL,
 		ind_re:      regexp.MustCompile(IND_RE),
-		memory:      new(simple_line_memory),
 	}
 	// default line printer
 	lp := line_printer{
@@ -375,6 +430,7 @@ func main() {
 	flag.BoolVar(&lp.separator, "separator", false, OD_SEPARATOR)
 	flag.StringVar(&lp.separator_string, "separator-string", DEF_SEPARATOR,
 		OD_SEPARATOR_STRING)
+	top_level := flag.Bool("top-level", false, OD_TOP_LEVEL)
 	flag.BoolVar(&lp.with_filename, "with-filename", false,
 		OD_WITH_FILENAME)
 	yaml_ind := flag.Bool("yaml", false, OD_YAML_IND)
@@ -403,6 +459,11 @@ func main() {
 	}
 	if *yaml_ind {
 		sp.ind_re = regexp.MustCompile(YAML_IND_RE)
+	}
+	if *top_level {
+		sp.memory = new(top_level_lm)
+	} else {
+		sp.memory = new(simple_line_memory)
 	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {
