@@ -199,7 +199,7 @@ func (lm *simple_line_memory) flush(act, ign *line_printer) (err error) {
 		}
 		in_sect = l.s_ind > -1
 		cont_sect = in_sect && l.l_ind > l.s_ind
-		new_sect = in_sect && !cont_sect && !prev_sect
+		new_sect = in_sect && (!cont_sect || !prev_sect)
 		prev_sect = in_sect
 		err = act.print_line(&l.data, l.nr, new_sect, in_sect)
 		if err != nil {
@@ -268,8 +268,9 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		}
 		// determine indentation depth of current line
 		c_ind = len(p.ind_re.Find(l))
-		// print a completed top level section
-		if min_ind > -1 || c_ind <= min_ind {
+		// manage top level section status
+		if min_ind > -1 && c_ind <= min_ind {
+			// print a completed top level section
 			min_ind = c_ind
 			err = p.memory.flush(p.action, p.ignore)
 			if err != nil {
@@ -277,6 +278,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 				return
 			}
 		} else if min_ind == -1 {
+			// initialize top level indentation
 			min_ind = c_ind
 		}
 		// check if current line matches pattern
