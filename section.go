@@ -84,7 +84,7 @@ type section_params struct {
 	// regular expression matching sections
 	pat_re *regexp.Regexp
 	// memory for processed lines
-	memory *line_memory
+	memory line_memory
 }
 
 // line printer object
@@ -146,13 +146,20 @@ type line struct {
 	data  []byte // the bytes constituting the line itself
 }
 
-// a collection of lines with added information
-type line_memory struct {
+// interface to a collection of lines with added information
+type line_memory interface {
+	add(l *[]byte, nr uint64, l_ind, s_ind int) int
+	flush(act, ign *line_printer) (err error)
+}
+
+// a collection of lines with added information for the simple ("memoryless")
+// section algorithm
+type simple_line_memory struct {
 	lines *[]line
 }
 
-// add a line to the collection
-func (lm *line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
+// add a line to the collection according to simple ("memoryless") rules
+func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 	new_line := line{
 		l_ind: l_ind,
 		s_ind: s_ind,
@@ -169,7 +176,8 @@ func (lm *line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 }
 
 // print contents of a line collection and clear it
-func (lm *line_memory) flush(act, ign *line_printer) (err error) {
+// this should work identically for "memoryless", "top level", and "enclosing"
+func (lm *simple_line_memory) flush(act, ign *line_printer) (err error) {
 	prev_sect := false
 	in_sect := false
 	cont_sect := false
@@ -319,7 +327,7 @@ func main() {
 	sp := section_params{
 		stdin_label: DEF_STDIN_LABEL,
 		ind_re:      regexp.MustCompile(IND_RE),
-		memory:      new(line_memory),
+		memory:      new(simple_line_memory),
 	}
 	// default line printer
 	lp := line_printer{
