@@ -61,6 +61,15 @@ starting with
 
 .SS Control section boundary determination:
 .TP
+.SS \-\-enclosing
+Sections enclose the line matching the
+.IR PATTERN .
+Each section starts at the last line preceding the line matching the
+.I PATTERN
+with less indentation.
+If no such line exists, the section starts with the line matching the
+.IR PATTERN .
+.TP
 .SS \-\-ignore\-blank
 Ignore the indentation level of blank lines,
 so that sections always continue across them.

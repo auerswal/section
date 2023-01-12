@@ -51,6 +51,7 @@ const (
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
+	OD_ENCLOSING        = "select sections enclosing matched lines"
 	OD_HELP             = "display help text and exit"
 	OD_IGNORE_BLANK     = "continue sections over blank lines"
 	OD_IGNORE_CASE      = "ignore case distinctions"
@@ -245,8 +246,56 @@ func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 	return min_ind
 }
 
-// use .flush() method from simple ("memoryless") line memory
+// use .flush() method from simple ("memoryless") line memory for "top level"
 func (lm *top_level_lm) flush(act, ign *line_printer) (err error) {
+	return lm.simple_line_memory.flush(act, ign)
+}
+
+// a collection of lines with added information for the "enclosing"
+// section algorithm
+type enclosing_lm struct {
+	simple_line_memory
+}
+
+// add a line to the collection according to "enclosing" section rules
+func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
+	_ = lm.simple_line_memory.add(l, nr, l_ind, s_ind)
+	// ignored lines do not affect section meta data
+	if l_ind == -1 {
+		return s_ind
+	}
+	// only pattern match can affect section meta data
+	if l_ind != s_ind {
+		return s_ind
+	}
+	// extend a new section from the last preceding line with lower
+	// indentation level to the new line that was just added
+	nr_lines := len(*lm.lines)
+	// find section start
+	i := nr_lines - 1
+	for ; i > 0; i-- {
+		if (*lm.lines)[i].l_ind != -1 && (*lm.lines)[i].l_ind < s_ind {
+			break
+		}
+	}
+	// determine section indentation level
+	if (*lm.lines)[i].l_ind != -1 {
+		s_ind = (*lm.lines)[i].l_ind
+	} else {
+		// line matching pattern starts the section
+		return s_ind
+	}
+	// mark lines comprising section with newly found indentation level
+	for ; i < nr_lines; i++ {
+		if (*lm.lines)[i].l_ind != -1 {
+			(*lm.lines)[i].s_ind = s_ind
+		}
+	}
+	return s_ind
+}
+
+// use .flush() method from simple ("memoryless") line memory for "enclosing"
+func (lm *enclosing_lm) flush(act, ign *line_printer) (err error) {
 	return lm.simple_line_memory.flush(act, ign)
 }
 
@@ -398,6 +447,7 @@ func main() {
 	flag.BoolVar(&print_version, "version", false, OD_VERSION)
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
 	// modify section behavior
+	enclosing := flag.Bool("enclosing", false, OD_ENCLOSING)
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
@@ -446,6 +496,8 @@ func main() {
 	}
 	if *top_level {
 		sp.memory = new(top_level_lm)
+	} else if *enclosing {
+		sp.memory = new(enclosing_lm)
 	} else {
 		sp.memory = new(simple_line_memory)
 	}
