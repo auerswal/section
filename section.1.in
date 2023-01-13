@@ -164,7 +164,7 @@ uses Go's
 package, and thus understands the
 .I RE2
 syntax described at
-.UR https://golang.org/s/re2syntax
+.UR https://github.com/google/re2/wiki/Syntax
 .UE .
 
 .SH EXIT STATUS
