@@ -163,9 +163,7 @@ uses Go's
 .I regexp
 package, and thus understands the
 .I RE2
-syntax described at
-.UR https://github.com/google/re2/wiki/Syntax
-.UE .
+syntax.
 
 .SH EXIT STATUS
 .IP \(bu
@@ -225,6 +223,9 @@ There is NO WARRANTY, to the extent permitted by law.
 .IR flag ,
 .B go doc
 .IR regexp ,
+.P
+.UR https://github.com/google/re2/wiki/Syntax
+.UE ,
 .P
 .UR https://www.unix\-ag.uni\-kl.de/~auerswal/section/
 .UE
