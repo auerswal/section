@@ -58,6 +58,6 @@ clean:
 	$(RM) $(wildcard tests/*.out) tests/tests.log
 
 distclean: clean
-	$(RM) $(MAN) $(ARCHIVE)
+	$(RM) $(MAN) $(wildcard $(BINARY)-*.*.*.tar.gz)
 
 .PHONY: check clean distclean install
