@@ -1,6 +1,11 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Upcoming Version (????-??-??):
+------------------------------
+ * Bug fix: handle YAML lists of lists with "--yaml".
+ * Documentation improvements.
+
 Version 0.5.2 (2023-01-28):
 ---------------------------
  * Bug fix: use exit code 2 when a file given as argument could not be

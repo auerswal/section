@@ -38,7 +38,7 @@ const (
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
 	IND_RE      = `^[ \t]*`
-	YAML_IND_RE = `^[ \t]*(- )?`
+	YAML_IND_RE = `^[ \t]*(- )*`
 	BLANK_RE    = `^[ \t]*$`
 	RE_IGN_CASE = `(?i)`
 	// default values
