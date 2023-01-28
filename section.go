@@ -190,6 +190,9 @@ func (lm *simple_line_memory) flush(act, ign *line_printer) (err error) {
 	in_sect := false
 	cont_sect := false
 	new_sect := false
+	if lm.lines == nil {
+		return nil
+	}
 	for _, l := range *lm.lines {
 		// ignore lines with unspecified indentation level
 		if l.l_ind == -1 {
