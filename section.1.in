@@ -85,7 +85,8 @@ A line matching the
 selects the complete top level section.
 .TP
 .SS \-\-yaml
-Support YAML list indentation in addition to white space based indentation.
+Accept trailing YAML sequence (list) indentation in addition to white space
+based indentation.
 
 .SS Control output format:
 .TP
@@ -199,6 +200,10 @@ package.
 Thus single character options cannot be combined,
 options longer than a single character cannot be abbreviated,
 and all options can be started by either a single or a double hyphen.
+.IP \(bu
+YAML sequences of mappings are not handled perfectly, because
+.B section \-\-yaml
+does not parse the YAML format.
 
 .SH AUTHOR
 .B section
