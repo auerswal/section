@@ -127,7 +127,7 @@ need not be a single character.
 Suppress all normal output.
 The exit code can be used to determine if the
 .I PATTERN
-was matched or not.
+was matched or not, or if an error occurred.
 Error messages are still printed.
 .TP
 .SS \-\-separator

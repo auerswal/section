@@ -1,6 +1,11 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Version 0.5.2 (2023-01-28):
+---------------------------
+ * Bug fix: use exit code 2 when a file given as argument could not be
+   opened, instead of ignoring this error.
+
 Version 0.5.1 (2023-01-28):
 ---------------------------
  * Bug fix: do not crash ("panic") on empty input.  This bug was
