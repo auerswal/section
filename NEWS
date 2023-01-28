@@ -1,6 +1,13 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Version 0.5.1 (2023-01-28):
+---------------------------
+ * Bug fix: do not crash ("panic") on empty input.  This bug was
+   introduced in version 0.4.0.
+ * Bug fix: add all test input files to tar balls.  Before, additional
+   input files were omitted.  This bug was introduced in version 0.2.2.
+
 Version 0.5.0 (2023-01-12):
 ---------------------------
  * New option "--enclosing" to select sections enclosing matched lines
