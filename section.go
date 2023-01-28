@@ -312,7 +312,7 @@ func usage_err(err error) {
 	log.SetPrefix(PROG + ": error: ")
 	log.Print(err)
 	usage(os.Stderr)
-	fmt.Fprintf(os.Stderr, "Try '%s -help' for more information\n", PROG)
+	fmt.Fprintf(os.Stderr, "Try '%s --help' for more information\n", PROG)
 	os.Exit(2)
 }
 
