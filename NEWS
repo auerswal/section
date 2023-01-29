@@ -1,8 +1,8 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Upcoming Version (????-??-??):
-------------------------------
+Version 0.5.3 (2023-01-29):
+---------------------------
  * Bug fix: consistently handle nested YAML sequences with "--yaml".
  * Documentation improvements.
 
