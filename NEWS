@@ -3,7 +3,7 @@ Noteworthy Changes in section Releases
 
 Upcoming Version (????-??-??):
 ------------------------------
- * Bug fix: handle YAML lists of lists with "--yaml".
+ * Bug fix: consistently handle nested YAML sequences with "--yaml".
  * Documentation improvements.
 
 Version 0.5.2 (2023-01-28):
