@@ -7,7 +7,7 @@ By default, the matching lines and any indented sections under the
 matching lines are printed.  Using options, the section start can be
 changed to be at an earlier line than the pattern match.
 
-This can be helpful when working with, e.g., Python code, YAML data,
+This can be helpful when working with, e.g., Python code, Makefiles,
 or Free Range Routing (FRR) configuration files.
 
 Use "section --help" for basic usage information and option description.
