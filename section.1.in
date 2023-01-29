@@ -17,7 +17,7 @@ in each
 (or standard input if no
 .I FILE
 is given), and prints the sections determined by matching lines
-and the selected algorithm variant
+together with the selected section algorithm variant
 to standard output.
 .P
 A section comprises all deeper indented lines directly following the
