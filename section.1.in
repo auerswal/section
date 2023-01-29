@@ -87,6 +87,11 @@ selects the complete top level section.
 .SS \-\-yaml
 Accept trailing YAML sequence (list) indentation in addition to white space
 based indentation.
+This results in considering a YAML sequence used as a value in a YAML mapping
+as further indented than the key,
+even if the
+.I dash
+has the same indentation depth as the key.
 
 .SS Control output format:
 .TP
@@ -201,9 +206,16 @@ Thus single character options cannot be combined,
 options longer than a single character cannot be abbreviated,
 and all options can be started by either a single or a double hyphen.
 .IP \(bu
-YAML sequences of mappings are not handled perfectly, because
-.B section \-\-yaml
+YAML sequences are not handled well, because
+.B section
 does not parse the YAML format.
+Giving the
+.B \-\-yaml
+option does not change this.
+The structure created by YAML sequence indicators is ignored by
+.BR section .
+.B section
+always uses indentation depth to determine sections.
 
 .SH AUTHOR
 .B section
