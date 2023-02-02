@@ -1,0 +1,26 @@
+!
+ interface vlan.0.8
+  exit
+ interface vlan.0.11
+  description "Example SVI for VLAN 11"
+  ip address 192.0.2.11 255.255.255.0
+  no ip proxy-arp
+  no ip redirects
+  no ip icmp unreachable
+  no shutdown
+  exit
+ interface vlan.0.42
+  description "Example SVI for VLAN 42"
+  ip address 198.51.100.42 255.255.255.0
+  no ip proxy-arp
+  no ip redirects
+  no ip icmp unreachable
+  exit
+ interface vlan.0.47
+  description "Example SVI for VLAN 47"
+  ip address 203.0.113.47 255.255.255.0
+  no ip proxy-arp
+  no ip redirects
+  no ip icmp unreachable
+  no shutdown
+  exit
