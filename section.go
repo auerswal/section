@@ -52,6 +52,7 @@ License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
 	OD_ENCLOSING        = "select sections enclosing matched lines"
+	OD_FIXED_STRING     = "PATTERN is fixed string, not regular expression"
 	OD_HELP             = "display help text and exit"
 	OD_IGNORE_BLANK     = "continue sections over blank lines"
 	OD_IGNORE_CASE      = "ignore case distinctions"
@@ -73,6 +74,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 // parameterize section algorithm
 type section_params struct {
 	// options
+	fixed_string bool
 	ignore_case  bool
 	invert_match bool
 	stdin_label  string
@@ -451,6 +453,8 @@ func main() {
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
 	// modify section behavior
 	enclosing := flag.Bool("enclosing", false, OD_ENCLOSING)
+	flag.BoolVar(&sp.fixed_string, "fixed-string", false, OD_FIXED_STRING)
+	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
@@ -509,6 +513,10 @@ func main() {
 		usage_err(errors.New("PATTERN is missing"))
 	}
 	pat_str := flag.Arg(0)
+	// escape meta characters if PATTERN is intended as a fixed string
+	if sp.fixed_string {
+		pat_str = regexp.QuoteMeta(pat_str)
+	}
 	// adjust pattern according to command line flags
 	if sp.ignore_case {
 		pat_str = RE_IGN_CASE + pat_str

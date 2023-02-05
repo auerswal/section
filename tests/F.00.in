@@ -1,0 +1,5 @@
+-- (ab[cd]?ef.gh+)*i --
+i
+abef.ghi
+abcefXghhhhhi
+abdefXgh+i

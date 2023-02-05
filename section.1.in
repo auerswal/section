@@ -26,6 +26,7 @@ starting line of the section.
 By default, sections are started by lines matching the
 .IR PATTERN .
 .P
+By default,
 .I PATTERN
 is a regular expression, see section
 .B "REGULAR EXPRESSIONS"
@@ -48,6 +49,11 @@ Write a help message to standard output.
 Write version information to standard output.
 
 .SS Control pattern matching:
+.TP
+.SS \-F, \-\-fixed\-string
+Indicate that the
+.I PATTERN
+shall be interpreted as a fixed string, not as a regular expression.
 .TP
 .SS \-i, \-\-ignore\-case
 Ignore case distinctions for pattern matching,

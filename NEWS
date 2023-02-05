@@ -1,6 +1,11 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Upcoming Version ?.?.? (????-??-??):
+------------------------------------
+ * New option "--fixed-string" to indicate that the PATTERN shall be
+   interpreted as a fixed string, not as a regular expression.
+
 Version 0.5.3 (2023-01-29):
 ---------------------------
  * Bug fix: consistently handle nested YAML sequences with "--yaml".

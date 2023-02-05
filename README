@@ -1,7 +1,7 @@
 This is an implementation of the "section" filter in Go.
 
 The section filter can be used to extract indented sections of text
-based on lines that match a regular expression.
+based on lines that match a regular expression or a fixed string.
 
 By default, the matching lines and any indented sections under the
 matching lines are printed.  Using options, the section start can be
