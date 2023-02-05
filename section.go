@@ -74,10 +74,15 @@ There is NO WARRANTY, to the extent permitted by law.`
 // parameterize section algorithm
 type section_params struct {
 	// options
+	enclosing    bool
 	fixed_string bool
+	ignore_blank bool
 	ignore_case  bool
 	invert_match bool
+	omit_ignored bool
 	stdin_label  string
+	top_level    bool
+	yaml_ind     bool
 	// actions performed by the section algorithm
 	action *line_printer
 	ignore *line_printer
@@ -444,15 +449,15 @@ func main() {
 	log.SetFlags(0)
 
 	// define command line flags
-	var print_help, print_version bool
 	flag.Usage = func() { usage_err(errors.New("unknown option")) }
 	// print program information instead of sections
+	var print_help, print_version bool
 	flag.BoolVar(&print_help, "help", false, OD_HELP)
 	flag.BoolVar(&print_help, "h", false, OD_HELP)
 	flag.BoolVar(&print_version, "version", false, OD_VERSION)
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
 	// modify section behavior
-	enclosing := flag.Bool("enclosing", false, OD_ENCLOSING)
+	flag.BoolVar(&sp.enclosing, "enclosing", false, OD_ENCLOSING)
 	flag.BoolVar(&sp.fixed_string, "fixed-string", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
@@ -471,12 +476,12 @@ func main() {
 	flag.BoolVar(&lp.separator, "separator", false, OD_SEPARATOR)
 	flag.StringVar(&lp.separator_string, "separator-string", DEF_SEPARATOR,
 		OD_SEPARATOR_STRING)
-	top_level := flag.Bool("top-level", false, OD_TOP_LEVEL)
+	flag.BoolVar(&sp.top_level, "top-level", false, OD_TOP_LEVEL)
 	flag.BoolVar(&lp.with_filename, "with-filename", false,
 		OD_WITH_FILENAME)
-	yaml_ind := flag.Bool("yaml", false, OD_YAML_IND)
-	ignore_blank := flag.Bool("ignore-blank", false, OD_IGNORE_BLANK)
-	omit_ignored := flag.Bool("omit-ignored", false, OD_OMIT_IGNORED)
+	flag.BoolVar(&sp.yaml_ind, "yaml", false, OD_YAML_IND)
+	flag.BoolVar(&sp.ignore_blank, "ignore-blank", false, OD_IGNORE_BLANK)
+	flag.BoolVar(&sp.omit_ignored, "omit-ignored", false, OD_OMIT_IGNORED)
 	// parse command line flags
 	flag.Parse()
 
@@ -489,21 +494,21 @@ func main() {
 		version()
 		os.Exit(0)
 	}
-	if *ignore_blank {
+	if sp.ignore_blank {
 		sp.ignore_re = regexp.MustCompile(BLANK_RE)
 	}
-	if *omit_ignored {
+	if sp.omit_ignored {
 		no_output := line_printer{
 			quiet: true,
 		}
 		sp.ignore = &no_output
 	}
-	if *yaml_ind {
+	if sp.yaml_ind {
 		sp.ind_re = regexp.MustCompile(YAML_IND_RE)
 	}
-	if *top_level {
+	if sp.top_level {
 		sp.memory = new(top_level_lm)
-	} else if *enclosing {
+	} else if sp.enclosing {
 		sp.memory = new(enclosing_lm)
 	} else {
 		sp.memory = new(simple_line_memory)
