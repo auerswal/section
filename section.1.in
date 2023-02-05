@@ -80,6 +80,14 @@ If no such line exists, the section starts with the line matching the
 Ignore the indentation level of blank lines,
 so that sections always continue across them.
 .TP
+.SS \-\-indent\-re INDENT_RE
+Use non-default regular expression
+.I INDENT_RE
+to describe indentation.
+The
+.B \-\-yaml
+option overrides this.
+.TP
 .SS \-\-top\-level
 Sections always start from the
 .I top

@@ -56,6 +56,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_HELP             = "display help text and exit"
 	OD_IGNORE_BLANK     = "continue sections over blank lines"
 	OD_IGNORE_CASE      = "ignore case distinctions"
+	OD_INDENT_RE        = "regular expression defining indentation"
 	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
 	OD_LINE_NUMBER      = "prefix output lines with line number"
 	OD_OMIT             = "omit matched sections, print everything else"
@@ -433,7 +434,6 @@ func main() {
 	// parameters for section algorithm
 	sp := section_params{
 		stdin_label: DEF_STDIN_LABEL,
-		ind_re:      regexp.MustCompile(IND_RE),
 	}
 	// default line printer
 	lp := line_printer{
@@ -457,11 +457,13 @@ func main() {
 	flag.BoolVar(&print_version, "version", false, OD_VERSION)
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
 	// modify section behavior
+	var indent_re string
 	flag.BoolVar(&sp.enclosing, "enclosing", false, OD_ENCLOSING)
 	flag.BoolVar(&sp.fixed_string, "fixed-string", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
+	flag.StringVar(&indent_re, "indent-re", IND_RE, OD_INDENT_RE)
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
 	flag.StringVar(&sp.stdin_label, "label", DEF_STDIN_LABEL,
 		OD_STDIN_LABEL)
@@ -505,6 +507,8 @@ func main() {
 	}
 	if sp.yaml_ind {
 		sp.ind_re = regexp.MustCompile(YAML_IND_RE)
+	} else {
+		sp.ind_re = regexp.MustCompile(indent_re)
 	}
 	if sp.top_level {
 		sp.memory = new(top_level_lm)
