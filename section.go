@@ -56,6 +56,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_HELP             = "display help text and exit"
 	OD_IGNORE_BLANK     = "continue sections over blank lines"
 	OD_IGNORE_CASE      = "ignore case distinctions"
+	OD_IGNORE_RE        = "ignore lines matching regular expression"
 	OD_INDENT_RE        = "regular expression defining indentation"
 	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
 	OD_LINE_NUMBER      = "prefix output lines with line number"
@@ -457,12 +458,13 @@ func main() {
 	flag.BoolVar(&print_version, "version", false, OD_VERSION)
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
 	// modify section behavior
-	var indent_re string
+	var ignore_re, indent_re string
 	flag.BoolVar(&sp.enclosing, "enclosing", false, OD_ENCLOSING)
 	flag.BoolVar(&sp.fixed_string, "fixed-string", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
+	flag.StringVar(&ignore_re, "ignore-re", "", OD_IGNORE_RE)
 	flag.StringVar(&indent_re, "indent-re", IND_RE, OD_INDENT_RE)
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
 	flag.StringVar(&sp.stdin_label, "label", DEF_STDIN_LABEL,
@@ -498,6 +500,8 @@ func main() {
 	}
 	if sp.ignore_blank {
 		sp.ignore_re = regexp.MustCompile(BLANK_RE)
+	} else if ignore_re != "" {
+		sp.ignore_re = regexp.MustCompile(ignore_re)
 	}
 	if sp.omit_ignored {
 		no_output := line_printer{

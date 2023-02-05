@@ -80,6 +80,14 @@ If no such line exists, the section starts with the line matching the
 Ignore the indentation level of blank lines,
 so that sections always continue across them.
 .TP
+.SS \-\-ignore\-re IGNORE_RE
+Ignore the indentation level of lines matching
+.IR IGNORE_RE ,
+so that sections always continue across them.
+The
+.B \-\-ignore\-blank
+option overrides this.
+.TP
 .SS \-\-indent\-re INDENT_RE
 Use non-default regular expression
 .I INDENT_RE
