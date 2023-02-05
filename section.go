@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.6.0"
+	VERSION = "0.6.0+"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -56,7 +56,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_HELP             = "display help text and exit"
 	OD_IGNORE_BLANK     = "continue sections over blank lines"
 	OD_IGNORE_CASE      = "ignore case distinctions"
-	OD_IGNORE_RE        = "ignore lines matching regular expression"
+	OD_IGNORE_RE        = "continue sections over lines matching regexp"
 	OD_INDENT_RE        = "regular expression defining indentation"
 	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
 	OD_LINE_NUMBER      = "prefix output lines with line number"
