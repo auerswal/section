@@ -46,7 +46,7 @@ const (
 	DEF_SEPARATOR    = "--"
 	DEF_STDIN_LABEL  = "(standard input)"
 	// documentation
-	DESC      = "prints indented text sections started by matching a regular expression."
+	DESC      = "prints indented text sections selected by matching a pattern."
 	COPYRIGHT = `Copyright (C) 2019-2023 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
