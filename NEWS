@@ -4,6 +4,7 @@ Noteworthy Changes in section Releases
 Upcoming Version ?.?.? (????-??-??):
 ------------------------------------
  * Documentation improvements.
+ * Some error messages provide more information.
 
 Version 0.6.0 (2023-02-05):
 ---------------------------

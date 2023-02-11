@@ -311,12 +311,18 @@ func (lm *enclosing_lm) flush(act, ign *line_printer) (err error) {
 	return lm.simple_line_memory.flush(act, ign)
 }
 
+// print error with prefix
+func print_err(err error) {
+	log.SetPrefix(PROG + ": error: ")
+	log.Print(err)
+}
+
 // print short usage information
 func usage(w io.Writer) {
 	fmt.Fprintf(w, "Usage: %s [OPTION...] PATTERN [FILE...]\n", PROG)
 }
 
-// emit an error message
+// print error with prefix, print short usage info, then exit with code 2
 func usage_err(err error) {
 	log.SetPrefix(PROG + ": error: ")
 	log.Print(err)
@@ -375,7 +381,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			min_ind = c_ind
 			err = p.memory.flush(p.action, p.ignore)
 			if err != nil {
-				log.Print(s.Err())
+				print_err(s.Err())
 				return
 			}
 		} else if min_ind == -1 {
@@ -405,11 +411,11 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 	// print last top level section
 	err = p.memory.flush(p.action, p.ignore)
 	if err != nil {
-		log.Print(s.Err())
+		print_err(s.Err())
 	}
 	err = s.Err()
 	if err != nil {
-		log.Print(s.Err())
+		print_err(s.Err())
 	}
 	return
 }
@@ -501,7 +507,11 @@ func main() {
 	if sp.ignore_blank {
 		sp.ignore_re = regexp.MustCompile(BLANK_RE)
 	} else if ignore_re != "" {
-		sp.ignore_re = regexp.MustCompile(ignore_re)
+		sp.ignore_re, err = regexp.Compile(ignore_re)
+		if err != nil {
+			print_err(err)
+			usage_err(errors.New("invalid --ignore-re argument"))
+		}
 	}
 	if sp.omit_ignored {
 		no_output := line_printer{
@@ -512,7 +522,11 @@ func main() {
 	if sp.yaml_ind {
 		sp.ind_re = regexp.MustCompile(YAML_IND_RE)
 	} else {
-		sp.ind_re = regexp.MustCompile(indent_re)
+		sp.ind_re, err = regexp.Compile(indent_re)
+		if err != nil {
+			print_err(err)
+			usage_err(errors.New("invalid --indent-re argument:"))
+		}
 	}
 	if sp.top_level {
 		sp.memory = new(top_level_lm)
@@ -536,7 +550,8 @@ func main() {
 	}
 	sp.pat_re, err = regexp.Compile(pat_str)
 	if err != nil {
-		usage_err(err)
+		print_err(err)
+		usage_err(errors.New("invalid PATTERN"))
 	}
 
 	ec := 1
@@ -551,7 +566,7 @@ func main() {
 			m := false
 			f, err := os.Open(arg)
 			if err != nil {
-				log.Print(err)
+				print_err(err)
 				ec = exit_code(ec, m, err)
 				continue
 			}
