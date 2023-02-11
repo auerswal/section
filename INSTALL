@@ -40,6 +40,15 @@ Additional Makefile Targets
 Building and Installing with the Go Tool
 ----------------------------------------
 
+Before using the Go Tool, you should consider the privacy implications.
+
+Starting with some version, the Go Tool communicates with the Google
+module proxy and checksum database.  In 2023, there are plans to add
+telemetry to the Go Tool with the intent to collect usage data and
+transmit it to Google servers and store it there.  Setting some bespoke
+environment variables to specific values is supposed to deactivate
+all this.
+
 The Go tool for managing Go source code is intended as a Go specific
 replacement for Make, and it provides quite a bit of additional
 functionality.  If you have set up your system correctly for the Go tool,
