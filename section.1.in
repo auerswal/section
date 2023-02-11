@@ -39,6 +39,13 @@ Options can be used to modify the operation of
 uses Go's
 .I flag
 package for option processing.
+.P
+Using the two character sequence
+.B \-\-
+(two hyphens) in an option position ends option processing.
+This allows the
+.I PATTERN
+to start with a hyphen.
 
 .SS Print information about the section binary:
 .TP
