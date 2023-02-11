@@ -26,6 +26,10 @@ remove them later on.
 Installing section to your system may require administrative ("root")
 access.
 
+When using make to build section and the GCC Go compiler is available,
+it is used.  In case the GCC Go compiler is not available, but the Go
+Tool is, the Go Tool is used to build section.
+
 
 Additional Makefile Targets
 ---------------------------
