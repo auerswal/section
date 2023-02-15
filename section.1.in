@@ -122,6 +122,15 @@ even if the
 .I dash
 has the same indentation depth as the key.
 
+.SS Control output contents:
+.TP
+.SS \-\-omit
+Omit (exclude) matched sections,
+print everything else instead.
+.TP
+.SS \-\-omit\-ignored
+Do not print lines that are ignored when determining section breaks.
+
 .SS Control output format:
 .TP
 .SS \-\-label LABEL
@@ -141,13 +150,6 @@ The line number is added after the file name when both options
 and
 .B \-\-with\-filename
 are given.
-.TP
-.SS \-\-omit
-Omit matched sections,
-print everything else instead.
-.TP
-.SS \-\-omit\-ignored
-Do not print lines that are ignored when determining section breaks.
 .TP
 .SS \-\-prefix\-delimiter DELIMITER
 Use the given

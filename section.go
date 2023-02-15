@@ -60,7 +60,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_INDENT_RE        = "regular expression defining indentation"
 	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
 	OD_LINE_NUMBER      = "prefix output lines with line number"
-	OD_OMIT             = "omit matched sections, print everything else"
+	OD_OMIT             = "omit (exclude) matched sections, print everything else"
 	OD_OMIT_IGNORED     = "omit lines ignored as section breaks"
 	OD_PREFIX_DELIM     = "string to delimit a prefix"
 	OD_QUIET            = "suppress all normal output"
