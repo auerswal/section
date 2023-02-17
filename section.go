@@ -85,9 +85,6 @@ type section_params struct {
 	stdin_label  string
 	top_level    bool
 	yaml_ind     bool
-	// actions performed by the section algorithm
-	action *line_printer
-	ignore *line_printer
 	// regular expressions matching indentation
 	ind_re *regexp.Regexp
 	// regular expression matching lines to ignore
@@ -159,14 +156,28 @@ type line struct {
 
 // interface to a collection of lines with added information
 type line_memory interface {
+	set_act(lp *line_printer)
+	set_ign(lp *line_printer)
 	add(l *[]byte, nr uint64, l_ind, s_ind int) int
-	flush(act, ign *line_printer) (err error)
+	flush() (err error)
 }
 
 // a collection of lines with added information for the simple ("memoryless")
 // section algorithm
 type simple_line_memory struct {
 	lines *[]line
+	act *line_printer // default output function
+	ign *line_printer // output function for ignored lines
+}
+
+// set the line printer for normal lines
+func (lm *simple_line_memory) set_act(lp *line_printer) {
+	lm.act = lp
+}
+
+// set the line printer for ignored lines
+func (lm *simple_line_memory) set_ign(lp *line_printer) {
+	lm.ign = lp
 }
 
 // add a line to the collection according to simple ("memoryless") rules
@@ -194,7 +205,7 @@ func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 
 // print contents of a line collection and clear it
 // this should work identically for "memoryless", "top level", and "enclosing"
-func (lm *simple_line_memory) flush(act, ign *line_printer) (err error) {
+func (lm *simple_line_memory) flush() (err error) {
 	prev_sect := false
 	in_sect := false
 	cont_sect := false
@@ -205,7 +216,7 @@ func (lm *simple_line_memory) flush(act, ign *line_printer) (err error) {
 	for _, l := range *lm.lines {
 		// ignore lines with unspecified indentation level
 		if l.l_ind == -1 {
-			err = ign.print_line(&l.data, l.nr, false, in_sect)
+			err = lm.ign.print_line(&l.data, l.nr, false, in_sect)
 			if err != nil {
 				break
 			}
@@ -215,7 +226,7 @@ func (lm *simple_line_memory) flush(act, ign *line_printer) (err error) {
 		cont_sect = in_sect && l.l_ind > l.s_ind
 		new_sect = in_sect && (!cont_sect || !prev_sect)
 		prev_sect = in_sect
-		err = act.print_line(&l.data, l.nr, new_sect, in_sect)
+		err = lm.act.print_line(&l.data, l.nr, new_sect, in_sect)
 		if err != nil {
 			break
 		}
@@ -228,6 +239,16 @@ func (lm *simple_line_memory) flush(act, ign *line_printer) (err error) {
 // section algorithm
 type top_level_lm struct {
 	simple_line_memory
+}
+
+// use .set_act() method from simple ("memoryless") line memory for "top level"
+func (lm *top_level_lm) set_act(lp *line_printer) {
+	lm.simple_line_memory.act = lp
+}
+
+// use .set_ign() method from simple ("memoryless") line memory for "top level"
+func (lm *top_level_lm) set_ign(lp *line_printer) {
+	lm.simple_line_memory.ign = lp
 }
 
 // add a line to the collection according to "top level" section rules
@@ -259,14 +280,24 @@ func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 }
 
 // use .flush() method from simple ("memoryless") line memory for "top level"
-func (lm *top_level_lm) flush(act, ign *line_printer) (err error) {
-	return lm.simple_line_memory.flush(act, ign)
+func (lm *top_level_lm) flush() (err error) {
+	return lm.simple_line_memory.flush()
 }
 
 // a collection of lines with added information for the "enclosing"
 // section algorithm
 type enclosing_lm struct {
 	simple_line_memory
+}
+
+// use .set_act() method from simple ("memoryless") line memory for "enclosing"
+func (lm *enclosing_lm) set_act(lp *line_printer) {
+	lm.simple_line_memory.act = lp
+}
+
+// use .set_ign() method from simple ("memoryless") line memory for "enclosing"
+func (lm *enclosing_lm) set_ign(lp *line_printer) {
+	lm.simple_line_memory.ign = lp
 }
 
 // add a line to the collection according to "enclosing" section rules
@@ -307,8 +338,8 @@ func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 }
 
 // use .flush() method from simple ("memoryless") line memory for "enclosing"
-func (lm *enclosing_lm) flush(act, ign *line_printer) (err error) {
-	return lm.simple_line_memory.flush(act, ign)
+func (lm *enclosing_lm) flush() (err error) {
+	return lm.simple_line_memory.flush()
 }
 
 // print error with prefix
@@ -379,7 +410,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		if min_ind > -1 && c_ind <= min_ind {
 			// print a completed top level section
 			min_ind = c_ind
-			err = p.memory.flush(p.action, p.ignore)
+			err = p.memory.flush()
 			if err != nil {
 				print_err(s.Err())
 				return
@@ -409,7 +440,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		s_ind = p.memory.add(&l, l_nr, c_ind, s_ind)
 	}
 	// print last top level section
-	err = p.memory.flush(p.action, p.ignore)
+	err = p.memory.flush()
 	if err != nil {
 		print_err(s.Err())
 	}
@@ -447,9 +478,6 @@ func main() {
 		separator_string: DEF_SEPARATOR,
 		filename:         "",
 	}
-	// line printer as normal and ignore action by default
-	sp.action = &lp
-	sp.ignore = &lp
 
 	// error logging
 	log.SetPrefix(PROG + ": ")
@@ -504,6 +532,7 @@ func main() {
 		version()
 		os.Exit(0)
 	}
+	// section parameters
 	if sp.ignore_blank {
 		sp.ignore_re = regexp.MustCompile(BLANK_RE)
 	} else if ignore_re != "" {
@@ -512,12 +541,6 @@ func main() {
 			print_err(err)
 			usage_err(errors.New("invalid --ignore-re argument"))
 		}
-	}
-	if sp.omit_ignored {
-		no_output := line_printer{
-			quiet: true,
-		}
-		sp.ignore = &no_output
 	}
 	if sp.yaml_ind {
 		sp.ind_re = regexp.MustCompile(YAML_IND_RE)
@@ -528,12 +551,24 @@ func main() {
 			usage_err(errors.New("invalid --indent-re argument:"))
 		}
 	}
+	// line memory selection
 	if sp.top_level {
 		sp.memory = new(top_level_lm)
 	} else if sp.enclosing {
 		sp.memory = new(enclosing_lm)
 	} else {
 		sp.memory = new(simple_line_memory)
+	}
+	// already parameterized line printer as normal action
+	sp.memory.set_act(&lp)
+	// "ignore" line printer may be different from normal one
+	if sp.omit_ignored {
+		no_output := line_printer{
+			quiet: true,
+		}
+		sp.memory.set_ign(&no_output)
+	} else {
+		sp.memory.set_ign(&lp)
 	}
 	// required pattern to match on is given as command line argument
 	if flag.NArg() < 1 {
