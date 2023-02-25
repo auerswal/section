@@ -158,7 +158,7 @@ type line struct {
 type line_memory interface {
 	set_act(lp *line_printer)
 	set_ign(lp *line_printer)
-	add(l *[]byte, nr uint64, l_ind, s_ind int) int
+	add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	flush() (err error)
 }
 
@@ -181,7 +181,7 @@ func (lm *simple_line_memory) set_ign(lp *line_printer) {
 }
 
 // add a line to the collection according to simple ("memoryless") rules
-func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
+func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
 	// create a new data structure for the line
 	new_line := line{
 		l_ind: l_ind,
@@ -200,7 +200,7 @@ func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 	// the simple ("memoryless") section algorithm does not adjust meta
 	// data of previous lines, and does not adjust the section indentation
 	// level
-	return s_ind
+	return s_ind, nil
 }
 
 // print contents of a line collection and clear it
@@ -253,15 +253,19 @@ func (lm *top_level_lm) set_ign(lp *line_printer) {
 }
 
 // add a line to the collection according to "top level" section rules
-func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
-	_ = lm.simple_line_memory.add(l, nr, l_ind, s_ind)
+func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
+	var err error
+	_, err = lm.simple_line_memory.add(l, nr, l_ind, s_ind)
+	if err != nil {
+		return s_ind, err
+	}
 	// ignored lines do not affect section meta data
 	if l_ind == -1 {
-		return s_ind
+		return s_ind, err
 	}
 	// only pattern match can affect section meta data
 	if l_ind != s_ind {
-		return s_ind
+		return s_ind, err
 	}
 	// all saved lines are part of the current section, and
 	// the current section has the indentation level of the first
@@ -277,7 +281,7 @@ func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 		}
 		(*lm.lines)[i].s_ind = min_ind
 	}
-	return min_ind
+	return min_ind, err
 }
 
 // use .flush() method from simple ("memoryless") line memory for "top level"
@@ -302,15 +306,19 @@ func (lm *enclosing_lm) set_ign(lp *line_printer) {
 }
 
 // add a line to the collection according to "enclosing" section rules
-func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
-	_ = lm.simple_line_memory.add(l, nr, l_ind, s_ind)
+func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
+	var err error
+	_, err = lm.simple_line_memory.add(l, nr, l_ind, s_ind)
+	if err != nil {
+		return s_ind, err
+	}
 	// ignored lines do not affect section meta data
 	if l_ind == -1 {
-		return s_ind
+		return s_ind, err
 	}
 	// only pattern match can affect section meta data
 	if l_ind != s_ind {
-		return s_ind
+		return s_ind, err
 	}
 	// extend a new section from the last preceding line with lower
 	// indentation level to the new line that was just added
@@ -327,7 +335,7 @@ func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 		s_ind = (*lm.lines)[i].l_ind
 	} else {
 		// line matching pattern starts the section
-		return s_ind
+		return s_ind, err
 	}
 	// mark lines comprising section with newly found indentation level
 	for ; i < nr_lines; i++ {
@@ -335,7 +343,7 @@ func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 			(*lm.lines)[i].s_ind = s_ind
 		}
 	}
-	return s_ind
+	return s_ind, err
 }
 
 // use .flush() method from simple ("memoryless") line memory for "enclosing"
@@ -402,7 +410,11 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		l = s.Bytes()
 		// ignored lines do not cause a section transition
 		if p.ignore_re != nil && p.ignore_re.Match(l) {
-			p.memory.add(&l, l_nr, -1, s_ind)
+			_, err = p.memory.add(&l, l_nr, -1, s_ind)
+			if err != nil {
+				print_err(err)
+				return
+			}
 			continue
 		}
 		// determine indentation depth of current line
@@ -438,7 +450,11 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			}
 		}
 		// add current line to memory
-		s_ind = p.memory.add(&l, l_nr, c_ind, s_ind)
+		s_ind, err = p.memory.add(&l, l_nr, c_ind, s_ind)
+		if err != nil {
+			print_err(err)
+			return
+		}
 	}
 	// print last top level section
 	err = p.memory.flush()
