@@ -53,11 +53,11 @@ transmit it to Google servers and store it there.  Setting some bespoke
 environment variables to specific values is supposed to deactivate
 all this.
 
-The Go tool for managing Go source code is intended as a Go specific
+The Go Tool for managing Go source code is intended as a Go specific
 replacement for Make, and it provides quite a bit of additional
-functionality.  If you have set up your system correctly for the Go tool,
-and saved the section sources in an appropriate place for the Go tool
-to find them, you can use the Go tool to build and/or install section.
+functionality.  If you have set up your system correctly for the Go Tool,
+and saved the section sources in an appropriate place for the Go Tool
+to find them, you can use the Go Tool to build and/or install section.
 
 To build section, type:
 
