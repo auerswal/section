@@ -413,7 +413,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			min_ind = c_ind
 			err = p.memory.flush()
 			if err != nil {
-				print_err(s.Err())
+				print_err(err)
 				return
 			}
 		} else if min_ind == -1 {
@@ -443,11 +443,11 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 	// print last top level section
 	err = p.memory.flush()
 	if err != nil {
-		print_err(s.Err())
+		print_err(err)
 	}
 	err = s.Err()
 	if err != nil {
-		print_err(s.Err())
+		print_err(err)
 	}
 	return
 }
