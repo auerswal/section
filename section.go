@@ -204,7 +204,8 @@ func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) int {
 }
 
 // print contents of a line collection and clear it
-// this should work identically for "memoryless", "top level", and "enclosing"
+// this works identically for generic implementations of the "memoryless",
+// "top level", and "enclosing" section algorithm variants
 func (lm *simple_line_memory) flush() (err error) {
 	prev_sect := false
 	in_sect := false
