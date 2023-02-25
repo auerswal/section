@@ -166,8 +166,8 @@ type line_memory interface {
 // section algorithm
 type simple_line_memory struct {
 	lines *[]line
-	act *line_printer // default output function
-	ign *line_printer // output function for ignored lines
+	act   *line_printer // default output function
+	ign   *line_printer // output function for ignored lines
 }
 
 // set the line printer for normal lines
