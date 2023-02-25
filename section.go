@@ -402,7 +402,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		l = s.Bytes()
 		// ignored lines do not cause a section transition
 		if p.ignore_re != nil && p.ignore_re.Match(l) {
-			p.memory.add(&l, l_nr, -1, -1)
+			p.memory.add(&l, l_nr, -1, s_ind)
 			continue
 		}
 		// determine indentation depth of current line
