@@ -162,8 +162,9 @@ type line_memory interface {
 	flush() (err error)
 }
 
-// a collection of lines with added information for the simple ("memoryless")
-// section algorithm
+// a collection of lines with added information for a generic implementation
+// of the simple ("memoryless") section algorithm
+// (this is not a memoryless implementation)
 type simple_line_memory struct {
 	lines *[]line
 	act   *line_printer // default output function
@@ -180,7 +181,8 @@ func (lm *simple_line_memory) set_ign(lp *line_printer) {
 	lm.ign = lp
 }
 
-// add a line to the collection according to simple ("memoryless") rules
+// add a line to the collection according to simple ("memoryless") rules for
+// a generic implementation that does use extra memory to memorize lines
 func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
 	// create a new data structure for the line
 	new_line := line{
@@ -236,7 +238,8 @@ func (lm *simple_line_memory) flush() (err error) {
 	return
 }
 
-// memoryless implementation of simple section algorithm
+// memoryless implementation of simple ("memoryless") section algorithm
+// this implementation differs from the generic one by not memorizing lines
 type memoryless_lm struct {
 	act *line_printer // default output function
 	ign *line_printer // output function for ignored lines
@@ -268,7 +271,7 @@ func (lm *memoryless_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error
 }
 
 // nothing to do for "memoryless" implementation, but required to implement
-// the interface
+// the line_memory interface
 func (lm *memoryless_lm) flush() error {
 	return nil
 }
@@ -279,12 +282,14 @@ type top_level_lm struct {
 	simple_line_memory
 }
 
-// use .set_act() method from simple ("memoryless") line memory for "top level"
+// use .set_act() method from generic implementation of the simple
+// ("memoryless") section algorithm line memory for "top level"
 func (lm *top_level_lm) set_act(lp *line_printer) {
 	lm.simple_line_memory.act = lp
 }
 
-// use .set_ign() method from simple ("memoryless") line memory for "top level"
+// use .set_ign() method from generic implementation of the simple
+// ("memoryless") section algorithm line memory for "top level"
 func (lm *top_level_lm) set_ign(lp *line_printer) {
 	lm.simple_line_memory.ign = lp
 }
@@ -321,7 +326,8 @@ func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	return min_ind, err
 }
 
-// use .flush() method from simple ("memoryless") line memory for "top level"
+// use .flush() method from the generic implementation of the simple
+// ("memoryless") section algorithm line memory for "top level"
 func (lm *top_level_lm) flush() (err error) {
 	return lm.simple_line_memory.flush()
 }
@@ -332,12 +338,14 @@ type enclosing_lm struct {
 	simple_line_memory
 }
 
-// use .set_act() method from simple ("memoryless") line memory for "enclosing"
+// use .set_act() method from the generic implementation of the simple
+// ("memoryless") section algorithm line memory for "enclosing"
 func (lm *enclosing_lm) set_act(lp *line_printer) {
 	lm.simple_line_memory.act = lp
 }
 
-// use .set_ign() method from simple ("memoryless") line memory for "enclosing"
+// use .set_ign() method from the generic implementation of the simple
+// ("memoryless") section algorithm line memory for "enclosing"
 func (lm *enclosing_lm) set_ign(lp *line_printer) {
 	lm.simple_line_memory.ign = lp
 }
@@ -383,7 +391,8 @@ func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	return s_ind, err
 }
 
-// use .flush() method from simple ("memoryless") line memory for "enclosing"
+// use .flush() method from the generic implementation of the simple
+// ("memoryless") section algorithm line memory for "enclosing"
 func (lm *enclosing_lm) flush() (err error) {
 	return lm.simple_line_memory.flush()
 }
