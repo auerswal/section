@@ -236,6 +236,43 @@ func (lm *simple_line_memory) flush() (err error) {
 	return
 }
 
+// memoryless implementation of simple section algorithm
+type memoryless_lm struct {
+	act *line_printer // default output function
+	ign *line_printer // output function for ignored lines
+}
+
+// set the line printer for normal lines for memoryless implementation
+func (lm *memoryless_lm) set_act(lp *line_printer) {
+	lm.act = lp
+}
+
+// set the line printer for ignored lines for memoryless implementation
+func (lm *memoryless_lm) set_ign(lp *line_printer) {
+	lm.ign = lp
+}
+
+// the simple section algorithm can be implemented "memoryless", i.e.,
+// without saving any lines, by just printing them
+func (lm *memoryless_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
+	var err error
+	in_sect := s_ind > -1
+	cont_sect := in_sect && l_ind > s_ind
+	new_sect := in_sect && !cont_sect
+	if l_ind == -1 {
+		err = lm.ign.print_line(l, nr, false, in_sect)
+	} else {
+		err = lm.act.print_line(l, nr, new_sect, in_sect)
+	}
+	return s_ind, err
+}
+
+// nothing to do for "memoryless" implementation, but required to implement
+// the interface
+func (lm *memoryless_lm) flush() error {
+	return nil
+}
+
 // a collection of lines with added information for the "top level"
 // section algorithm
 type top_level_lm struct {
@@ -574,7 +611,7 @@ func main() {
 	} else if sp.enclosing {
 		sp.memory = new(enclosing_lm)
 	} else {
-		sp.memory = new(simple_line_memory)
+		sp.memory = new(memoryless_lm)
 	}
 	// already parameterized line printer as normal action
 	sp.memory.set_act(&lp)
