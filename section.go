@@ -280,6 +280,7 @@ func (lm *memoryless_lm) flush() error {
 // section algorithm
 type top_level_lm struct {
 	simple_line_memory
+	matched bool
 }
 
 // use .set_act() method from generic implementation of the simple
@@ -297,6 +298,17 @@ func (lm *top_level_lm) set_ign(lp *line_printer) {
 // add a line to the collection according to "top level" section rules
 func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
 	var err error
+	// as soon as the pattern has been matched, all lines can be sent
+	// to the line printer instead of saving a copy for later
+	if lm.matched {
+		if l_ind == -1 {
+			err = lm.ign.print_line(l, nr, false, true)
+		} else {
+			err = lm.act.print_line(l, nr, false, true)
+		}
+		return s_ind, err
+	}
+	// no pattern match yet, so save the line
 	_, err = lm.simple_line_memory.add(l, nr, l_ind, s_ind)
 	if err != nil {
 		return s_ind, err
@@ -312,24 +324,68 @@ func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	// all saved lines are part of the current section, and
 	// the current section has the indentation level of the first
 	// non-ignored line
+	// all saved lines can be sent to the appropriate line printer marked
+	// as "inside a section"
+	lm.matched = true
 	min_ind := -1
+	var sl *line
+	var new_sect bool
 	for i := range *lm.lines {
+		sl = &(*lm.lines)[i]
 		// section has indentation level of first non-ignored line
-		if (*lm.lines)[i].l_ind == -1 {
+		if sl.l_ind == -1 {
+			err = lm.ign.print_line(&sl.data, sl.nr, false, true)
+			if err != nil {
+				if min_ind == -1 {
+					return s_ind, err
+				} else {
+					break
+				}
+			}
 			continue
 		}
 		if min_ind == -1 {
-			min_ind = (*lm.lines)[i].l_ind
+			min_ind = sl.l_ind
+			new_sect = true
 		}
-		(*lm.lines)[i].s_ind = min_ind
+		err = lm.act.print_line(&sl.data, sl.nr, new_sect, true)
+		if err != nil {
+			break
+		}
+		new_sect = false
 	}
+	// all saved lines have been sent to a line printer
+	lm.lines = nil
 	return min_ind, err
 }
 
-// use .flush() method from the generic implementation of the simple
-// ("memoryless") section algorithm line memory for "top level"
+// the "top level" section algorithm variant allows simpler handling
+// of saved lines than the generic .flush() implementation
 func (lm *top_level_lm) flush() (err error) {
-	return lm.simple_line_memory.flush()
+	// the last top level section is over, we do not have a match yet
+	lm.matched = false
+	if lm.lines == nil {
+		return
+	}
+	// send all saved lines to the appropriate line printer marked as
+	// "outside of a section"
+	new_sect := true
+	for _, l := range *lm.lines {
+		if l.l_ind == -1 {
+			err = lm.ign.print_line(&l.data, l.nr, false, false)
+			if err != nil {
+				break
+			}
+			continue
+		}
+		err = lm.act.print_line(&l.data, l.nr, new_sect, false)
+		if err != nil {
+			break
+		}
+		new_sect = false
+	}
+	lm.lines = nil
+	return
 }
 
 // a collection of lines with added information for the "enclosing"
