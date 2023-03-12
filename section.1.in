@@ -103,6 +103,18 @@ The
 .B \-\-yaml
 option overrides this.
 .TP
+.SS \-\-tab\-size SIZE
+Tab characters inside the indentation increase the indentation depth to
+the value of the next tab stop.
+Each tab stop is at a character position that is an integer multiple of
+.IR SIZE,
+starting with character position
+.IR SIZE.
+.IP
+A tab
+.I SIZE
+of 1 disables tab expansion.
+.TP
 .SS \-\-top\-level
 Sections always start from the
 .I top
@@ -213,13 +225,6 @@ syntax.
 2, if an error occurred
 
 .SH "BUGS AND LIMITATIONS"
-.IP \(bu
-.B section
-does not distinguish between
-.I Space
-and
-.I Tab
-characters used for indentation.
 .IP \(bu
 The maxmimum line size supported by
 .B section

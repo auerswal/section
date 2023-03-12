@@ -67,6 +67,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_SEPARATOR        = "print a separator line between sections"
 	OD_SEPARATOR_STRING = "specify separator string"
 	OD_STDIN_LABEL      = "label in place of file name for standard input"
+	OD_TAB_SIZE         = "number of characters between two tab stops"
 	OD_TOP_LEVEL        = "sections start from minimum indentation level"
 	OD_WITH_FILENAME    = "prefix output lines with file name"
 	OD_YAML_IND         = "additionally allow YAML list indentation"
@@ -83,6 +84,7 @@ type section_params struct {
 	invert_match bool
 	omit_ignored bool
 	stdin_label  string
+	tab_size     int
 	top_level    bool
 	yaml_ind     bool
 	// regular expressions matching indentation
@@ -490,6 +492,25 @@ func version() {
 	fmt.Println(COPYRIGHT)
 }
 
+// compute indentation depth from indentation byte sequence
+func indentation_depth(in *[]byte, ts int) int {
+	if in == nil {
+		return 0
+	}
+	if ts < 2 {
+		return len(*in)
+	}
+	d := 0
+	for _, c := range *in {
+		if c == '\t' {
+			d += ts - (d % ts)
+		} else {
+			d++
+		}
+	}
+	return d
+}
+
 // read input text and write matching sections to output
 func section(p section_params, r io.Reader) (matched bool, err error) {
 	matched = false    // return if something was matched
@@ -502,6 +523,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 	min_ind := -1      // minimal indentation level seen so far
 	var buf []byte     // buffer space to hold input data
 	var l []byte       // one line of input data
+	var li []byte      // indentation bytes of the line
 	var l_nr uint64    // current line number
 
 	// process input line by line
@@ -520,7 +542,8 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			continue
 		}
 		// determine indentation depth of current line
-		c_ind = len(p.ind_re.Find(l))
+		li = p.ind_re.Find(l)
+		c_ind = indentation_depth(&li, p.tab_size)
 		// manage top level section status
 		if min_ind > -1 && c_ind <= min_ind {
 			// print a completed top level section
@@ -635,6 +658,7 @@ func main() {
 	flag.BoolVar(&lp.separator, "separator", false, OD_SEPARATOR)
 	flag.StringVar(&lp.separator_string, "separator-string", DEF_SEPARATOR,
 		OD_SEPARATOR_STRING)
+	flag.IntVar(&sp.tab_size, "tab-size", 8, OD_TAB_SIZE)
 	flag.BoolVar(&sp.top_level, "top-level", false, OD_TOP_LEVEL)
 	flag.BoolVar(&lp.with_filename, "with-filename", false,
 		OD_WITH_FILENAME)

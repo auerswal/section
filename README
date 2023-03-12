@@ -10,17 +10,14 @@ By default, the matching lines and any indented sections under the
 matching lines are printed.  Using options, the section start can be
 changed to be at an earlier line than the pattern match.
 
+By default, tab stops are assumed to be 8 characters wide.  Optionally,
+the tab stop size can be adjusted.
+
 Use "section --help" for basic usage information and option description.
 
 At the section homepage[1], you can read an HTML version of the section
 manual page[2].
 
-The section filter does not attempt to handle indentation with mixed
-space and tab characters.  You can use the widely available expand[3] and
-unexpand[4] filters to ensure uniform indentation for use with section.
-
 Links:
 [1] https://www.unix-ag.uni-kl.de/~auerswal/section/
 [2] https://www.unix-ag.uni-kl.de/~auerswal/section/section.1.html
-[3] https://pubs.opengroup.org/onlinepubs/9699919799/utilities/expand.html
-[4] https://pubs.opengroup.org/onlinepubs/9699919799/utilities/unexpand.html
