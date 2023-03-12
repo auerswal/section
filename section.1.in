@@ -241,6 +241,9 @@ package.
 Thus single character options cannot be combined,
 options longer than a single character cannot be abbreviated,
 and all options can be started by either a single or a double hyphen.
+Additionally, all options must come before the first non-option
+argument (i.e., the
+.IR PATTERN ).
 .IP \(bu
 YAML sequences are not handled well, because
 .B section
