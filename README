@@ -3,12 +3,12 @@ This is an implementation of the "section" filter in Go.
 The section filter can be used to extract indented sections of text
 based on lines that match a regular expression or a fixed string.
 
+This can be helpful when working with, e.g., Python code, Makefiles,
+or Free Range Routing (FRR) configuration files.
+
 By default, the matching lines and any indented sections under the
 matching lines are printed.  Using options, the section start can be
 changed to be at an earlier line than the pattern match.
-
-This can be helpful when working with, e.g., Python code, Makefiles,
-or Free Range Routing (FRR) configuration files.
 
 Use "section --help" for basic usage information and option description.
 
