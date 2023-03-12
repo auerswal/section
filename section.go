@@ -617,6 +617,7 @@ func main() {
 	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
+	flag.BoolVar(&sp.ignore_blank, "ignore-blank", false, OD_IGNORE_BLANK)
 	flag.StringVar(&ignore_re, "ignore-re", "", OD_IGNORE_RE)
 	flag.StringVar(&indent_re, "indent-re", IND_RE, OD_INDENT_RE)
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
@@ -625,6 +626,7 @@ func main() {
 	flag.BoolVar(&lp.line_number, "line-number", false, OD_LINE_NUMBER)
 	flag.BoolVar(&lp.line_number, "n", false, OD_LINE_NUMBER)
 	flag.BoolVar(&lp.omit, "omit", false, OD_OMIT)
+	flag.BoolVar(&sp.omit_ignored, "omit-ignored", false, OD_OMIT_IGNORED)
 	flag.StringVar(&lp.prefix_delim, "prefix-delimiter", DEF_PREFIX_DELIM,
 		OD_PREFIX_DELIM)
 	flag.BoolVar(&lp.quiet, "quiet", false, OD_QUIET)
@@ -637,8 +639,6 @@ func main() {
 	flag.BoolVar(&lp.with_filename, "with-filename", false,
 		OD_WITH_FILENAME)
 	flag.BoolVar(&sp.yaml_ind, "yaml", false, OD_YAML_IND)
-	flag.BoolVar(&sp.ignore_blank, "ignore-blank", false, OD_IGNORE_BLANK)
-	flag.BoolVar(&sp.omit_ignored, "omit-ignored", false, OD_OMIT_IGNORED)
 	// parse command line flags
 	flag.Parse()
 
