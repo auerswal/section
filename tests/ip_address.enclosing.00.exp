@@ -1,0 +1,4 @@
+    inet6 2001:db8:2:3:4313:b191:1c13:715c/64 scope global temporary deprecated dynamic 
+       valid_lft 6936sec preferred_lft 0sec
+    inet6 2001:db8:2:3:ec7b:5c94:12d2:7409/64 scope global deprecated dynamic mngtmpaddr noprefixroute 
+       valid_lft 6936sec preferred_lft 0sec
