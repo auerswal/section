@@ -1,8 +1,8 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Upcoming Version 0.7.0 (2023-03-12):
-------------------------------------
+Version 0.7.0 (2023-03-12):
+---------------------------
  * Behavior change: tab characters in the indentation are logically
    expanded with a default tab stop every 8 characters.
  * New option "--tab-size" to control Tab expansion.
