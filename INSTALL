@@ -57,12 +57,13 @@ The Go Tool for managing Go source code is intended as a Go specific
 replacement for Make, and it provides quite a bit of additional
 functionality.  If you have set up your system correctly for the Go Tool,
 and saved the section sources in an appropriate place for the Go Tool
-to find them, you can use the Go Tool to build and/or install section.
+to find them, you can use the Go Tool to build and/or install the
+section binary.  It does not install the man page.
 
-To build section, type:
+To build the section binary using the Go Tool, type:
 
     go build section
 
-To install section, type:
+To install the section binary using the Go Tool, type:
 
     go install section

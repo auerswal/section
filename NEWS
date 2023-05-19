@@ -1,6 +1,10 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Upcoming Version ?.?.? (????-??-??):
+------------------------------------
+ * Documentation improvements.
+
 Version 0.7.0 (2023-03-12):
 ---------------------------
  * Behavior change: tab characters in the indentation are logically
