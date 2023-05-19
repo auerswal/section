@@ -101,8 +101,8 @@ type section_params struct {
 type line_printer struct {
 	// state
 	has_printed bool
-	quiet       bool
 	is_printing bool
+	quiet       bool
 	// values
 	filename         string
 	prefix_delim     string
