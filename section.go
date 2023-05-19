@@ -51,6 +51,7 @@ const (
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
+	OD_BEGIN            = "also select all lines following first matched section"
 	OD_ENCLOSING        = "select sections enclosing matched lines"
 	OD_FIXED_STRING     = "PATTERN is fixed string, not regular expression"
 	OD_HELP             = "display help text and exit"
@@ -103,11 +104,13 @@ type line_printer struct {
 	has_printed bool
 	is_printing bool
 	quiet       bool
+	select_rest bool
 	// values
 	filename         string
 	prefix_delim     string
 	separator_string string
 	// features
+	begin         bool
 	line_number   bool
 	omit          bool
 	separator     bool
@@ -116,11 +119,17 @@ type line_printer struct {
 
 // method to possibly print a line, depending on state and parameters
 func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err error) {
-	if p.quiet || (p.omit && is) || (!p.omit && !is) {
+	omit_selected := p.omit && (is || p.select_rest)
+	omit_unselected := !p.omit && !(is || p.select_rest)
+	is_transition := (tr || (!p.is_printing && p.omit)) && !p.select_rest
+	if p.begin && is {
+		p.select_rest = true
+	}
+	if p.quiet || omit_selected || omit_unselected {
 		p.is_printing = false
 		return nil
 	}
-	if p.separator && p.has_printed && (tr || (!p.is_printing && p.omit)) {
+	if p.separator && p.has_printed && is_transition {
 		_, err = os.Stdout.WriteString(p.separator_string + "\n")
 		if err != nil {
 			return
@@ -635,6 +644,7 @@ func main() {
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
 	// modify section behavior
 	var ignore_re, indent_re string
+	flag.BoolVar(&lp.begin, "begin", false, OD_BEGIN)
 	flag.BoolVar(&sp.enclosing, "enclosing", false, OD_ENCLOSING)
 	flag.BoolVar(&sp.fixed_string, "fixed-string", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
@@ -749,6 +759,9 @@ func main() {
 				continue
 			}
 			lp.filename = arg
+			if lp.begin {
+				lp.select_rest = false
+			}
 			m, err = section(sp, f)
 			ec = exit_code(ec, m, err)
 			f.Close()

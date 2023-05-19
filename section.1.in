@@ -74,6 +74,15 @@ starting with
 
 .SS Control section boundary determination:
 .TP
+.SS \-\-begin
+Select the first matching section together with all following lines.
+If multiple
+.IR FILE s
+are given,
+each
+.I FILE
+is considered independently.
+.TP
 .SS \-\-enclosing
 Sections enclose the line matching the
 .IR PATTERN .

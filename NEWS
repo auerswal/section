@@ -4,6 +4,8 @@ Noteworthy Changes in section Releases
 Upcoming Version ?.?.? (????-??-??):
 ------------------------------------
  * Documentation improvements.
+ * New option "--begin" to select the first matching section together
+   with all following lines.
 
 Version 0.7.0 (2023-03-12):
 ---------------------------
