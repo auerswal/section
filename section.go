@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.7.0"
+	VERSION = "0.7.0+"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
