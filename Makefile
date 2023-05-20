@@ -24,7 +24,7 @@ all: $(BINARY) $(MAN)
 $(BINARY): $(SOURCE) Makefile
 	$(GC) -o $@ $<
 
-$(MAN): $(MANSRC) Makefile generate_man_page_date.sh
+$(MAN): $(MANSRC) Makefile generate_man_page_date.sh section.go
 	sed -e 's/@VERSION@/$(VERSION)/' \
 	    -e 's/@DATE@/$(shell ./generate_man_page_date.sh)/' \
 	    -e 's/@CRYEARS@/$(CRYEARS)/' <$< >$@
