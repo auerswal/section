@@ -22,11 +22,16 @@ if type 'git' >/dev/null 2>&1 && test -d '.git'; then
   exit
 fi
 # when a man page is available, keep its date
+# the generated man page is included in the tar ball for this to work
+# this allows to use the most accurate information when working from a tar ball,
+# as long as the included man page is not deleted, e.g., via "make distclean"
 if test -f 'section.1' && test -r 'section.1'; then
   awk 'NR == 1 { gsub(/"/, "", $4); print $4; exit }' 'section.1'
   exit
 fi
 # for a released version, use the release date
+# this allows for reproducible man page builds when working from a tar ball
+# of a release version after "make distclean"
 VERSION=$(sed -En 's/^.*VERSION.*=.*"([0-9]+(\.[0-9]+){2}\+?)".*$$/\1/p' section.go)
 if test -n "$VERSION" && echo "$VERSION" | grep -qv '+$'; then
   RELDATE=$(sed -En "s/^Version $VERSION \\(([0-9]{4}-[0-9]{2}-[0-9]{2})\).*$/\1/p" NEWS)
