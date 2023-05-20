@@ -23,7 +23,7 @@ if type 'git' >/dev/null 2>&1 && test -d '.git'; then
 fi
 # when a man page is available, keep its date
 if test -f 'section.1' && test -r 'section.1'; then
-  awk 'NR == 1 { gsub(/\"/, "", $4); print $4; exit }' 'section.1'
+  awk 'NR == 1 { gsub(/"/, "", $4); print $4; exit }' 'section.1'
   exit
 fi
 # as a last resort, use the file modification date of man page source
