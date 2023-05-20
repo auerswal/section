@@ -31,6 +31,16 @@ it is used.  In case the GCC Go compiler is not available, but the Go
 Tool is, the Go Tool is used to build section.
 
 
+Prerequisites
+-------------
+- A Go compiler, e.g., GCC Go or the Go Tool.
+- A system sufficiently compatible to POSIX and GNU.
+- POSIX (or compatible) utilities: grep, printf, sh, sed, test
+- GNU (or compatible) utilities: date, gzip, install, make, tar
+- To create an HTML version of the man page, you need a man utility that can
+  produce HTML output.
+
+
 Additional Makefile Targets
 ---------------------------
 
