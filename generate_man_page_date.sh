@@ -26,5 +26,14 @@ if test -f 'section.1' && test -r 'section.1'; then
   awk 'NR == 1 { gsub(/"/, "", $4); print $4; exit }' 'section.1'
   exit
 fi
+# for a released version, use the release date
+VERSION=$(sed -En 's/^.*VERSION.*=.*"([0-9]+(\.[0-9]+){2}\+?)".*$$/\1/p' section.go)
+if test -n "$VERSION" && echo "$VERSION" | grep -qv '+$'; then
+  RELDATE=$(sed -En "s/^Version $VERSION \\(([0-9]{4}-[0-9]{2}-[0-9]{2})\).*$/\1/p" NEWS)
+  if test -n "$RELDATE"; then
+    echo "$RELDATE"
+    exit
+  fi
+fi
 # as a last resort, use the file modification date of man page source
 date -r 'section.1.in' +%Y-%m-%d
