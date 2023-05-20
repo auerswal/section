@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# generate_man_page_date.sh
+# generate_man_page_date.sh - find a suitable date for the man page
 # Copyright (C) 2021-2023  Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 #
 # This program is free software: you can redistribute it and/or modify
