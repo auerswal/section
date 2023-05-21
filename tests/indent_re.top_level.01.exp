@@ -1,0 +1,24 @@
+frobnicator: starting frobnication
+frobnicator:  frobnicating frob alpha
+frobnicator:   alpha one
+frobnicator:    ok
+frobnicator:   alpha two
+frobnicator:    ok
+frobnicator:   alpha three
+frobnicator:    failed
+frobnicator:   alpha four
+frobnicator:    ok
+frobnicator:  frobnicating frob beta
+frobnicator:   beta one
+frobnicator:    failed
+frobnicator:   beta two
+frobnicator:    ok
+frobnicator:   beta three
+frobnicator:    ok
+frobnicator:   beta four
+frobnicator:    fail
+frobnicator:  frobnicating frob gamma
+frobnicator:   gamma one
+frobnicator:    ok
+frobnicator:   gamma two
+frobnicator:    ok
