@@ -1,0 +1,7 @@
+*Mar  1 00:06:47.427: DHCPD: Seeing if there is an internally specified pool class:
+*Mar  1 00:06:47.431:   DHCPD: htype 1 chaddr c001.0f1c.0000
+*Mar  1 00:06:47.431:   DHCPD: remote id 020a00000a01010101000000
+*Mar  1 00:06:47.435:   DHCPD: circuit id 00000000
+*Mar  3 14:17:55.798: CBAC OBJ-CREATE: sid 846524D4 acl 100 Prot: tcp
+*Mar  3 14:17:55.798:  Src 10.8.8.3 Port [80:80]
+*Mar  3 14:17:55.798:  Dst 192.168.1.50 Port [1979:1979]

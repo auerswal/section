@@ -1,0 +1,4 @@
+*Mar  1 00:06:47.427: DHCPD: Seeing if there is an internally specified pool class:
+*Mar  1 00:06:47.431:   DHCPD: htype 1 chaddr c001.0f1c.0000
+*Mar  1 00:06:47.431:   DHCPD: remote id 020a00000a01010101000000
+*Mar  1 00:06:47.435:   DHCPD: circuit id 00000000
