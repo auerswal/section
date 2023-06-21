@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.8.0"
+	VERSION = "0.8.0+"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -750,9 +750,12 @@ func main() {
 		m, err := section(sp, os.Stdin)
 		ec = exit_code(ec, m, err)
 	} else {
+		var m bool
+		var err error
+		var f *os.File
 		for _, arg := range flag.Args()[1:] {
-			m := false
-			f, err := os.Open(arg)
+			m = false
+			f, err = os.Open(arg)
 			if err != nil {
 				print_err(err)
 				ec = exit_code(ec, m, err)
