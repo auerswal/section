@@ -88,3 +88,7 @@ To build the section binary using the Go Tool, type:
 To install the section binary using the Go Tool, type:
 
     go install section
+
+The "go install" commands seems to build and then move the binary to its
+future location, i.e., if you had already built section with "go build",
+after "go install" this copy may have been removed.
