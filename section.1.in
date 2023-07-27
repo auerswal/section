@@ -119,10 +119,13 @@ Each tab stop is at a character position that is an integer multiple of
 .IR SIZE,
 starting with character position
 .IR SIZE.
-.IP
-A tab
+The default value of
 .I SIZE
-of 1 disables tab expansion.
+is 8.
+.IP
+Setting
+.I SIZE
+to 1 results in treating tab characters identically to space characters.
 .TP
 .SS \-\-top\-level
 Sections always start from the
