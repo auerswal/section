@@ -227,22 +227,25 @@ func (lm *simple_line_memory) flush() (err error) {
 	if lm.lines == nil {
 		return nil
 	}
-	for _, l := range *lm.lines {
-		// ignore lines with unspecified indentation level
-		if l.l_ind == -1 {
-			err = lm.ign.print_line(&l.data, l.nr, false, in_sect)
+	{
+		var l line
+		for _, l = range *lm.lines {
+			// ignore lines with unspecified indentation level
+			if l.l_ind == -1 {
+				err = lm.ign.print_line(&l.data, l.nr, false, in_sect)
+				if err != nil {
+					break
+				}
+				continue
+			}
+			in_sect = l.s_ind > -1
+			cont_sect = in_sect && l.l_ind > l.s_ind
+			new_sect = in_sect && (!cont_sect || !prev_sect)
+			prev_sect = in_sect
+			err = lm.act.print_line(&l.data, l.nr, new_sect, in_sect)
 			if err != nil {
 				break
 			}
-			continue
-		}
-		in_sect = l.s_ind > -1
-		cont_sect = in_sect && l.l_ind > l.s_ind
-		new_sect = in_sect && (!cont_sect || !prev_sect)
-		prev_sect = in_sect
-		err = lm.act.print_line(&l.data, l.nr, new_sect, in_sect)
-		if err != nil {
-			break
 		}
 	}
 	lm.lines = nil
@@ -341,29 +344,32 @@ func (lm *top_level_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	min_ind := -1
 	var sl *line
 	var new_sect bool
-	for i := range *lm.lines {
-		sl = &(*lm.lines)[i]
-		// section has indentation level of first non-ignored line
-		if sl.l_ind == -1 {
-			err = lm.ign.print_line(&sl.data, sl.nr, false, true)
-			if err != nil {
-				if min_ind == -1 {
-					return s_ind, err
-				} else {
-					break
+	{
+		var i int
+		for i = range *lm.lines {
+			sl = &(*lm.lines)[i]
+			// section has indentation level of first non-ignored line
+			if sl.l_ind == -1 {
+				err = lm.ign.print_line(&sl.data, sl.nr, false, true)
+				if err != nil {
+					if min_ind == -1 {
+						return s_ind, err
+					} else {
+						break
+					}
 				}
+				continue
 			}
-			continue
+			if min_ind == -1 {
+				min_ind = sl.l_ind
+				new_sect = true
+			}
+			err = lm.act.print_line(&sl.data, sl.nr, new_sect, true)
+			if err != nil {
+				break
+			}
+			new_sect = false
 		}
-		if min_ind == -1 {
-			min_ind = sl.l_ind
-			new_sect = true
-		}
-		err = lm.act.print_line(&sl.data, sl.nr, new_sect, true)
-		if err != nil {
-			break
-		}
-		new_sect = false
 	}
 	// all saved lines have been sent to a line printer
 	lm.lines = nil
@@ -381,19 +387,22 @@ func (lm *top_level_lm) flush() (err error) {
 	// send all saved lines to the appropriate line printer marked as
 	// "outside of a section"
 	new_sect := true
-	for _, l := range *lm.lines {
-		if l.l_ind == -1 {
-			err = lm.ign.print_line(&l.data, l.nr, false, false)
+	{
+		var l line
+		for _, l = range *lm.lines {
+			if l.l_ind == -1 {
+				err = lm.ign.print_line(&l.data, l.nr, false, false)
+				if err != nil {
+					break
+				}
+				continue
+			}
+			err = lm.act.print_line(&l.data, l.nr, new_sect, false)
 			if err != nil {
 				break
 			}
-			continue
+			new_sect = false
 		}
-		err = lm.act.print_line(&l.data, l.nr, new_sect, false)
-		if err != nil {
-			break
-		}
-		new_sect = false
 	}
 	lm.lines = nil
 	return
@@ -510,11 +519,14 @@ func indentation_depth(in *[]byte, ts int) int {
 		return len(*in)
 	}
 	d := 0
-	for _, c := range *in {
-		if c == '\t' {
-			d += ts - (d % ts)
-		} else {
-			d++
+	{
+		var c byte
+		for _, c = range *in {
+			if c == '\t' {
+				d += ts - (d % ts)
+			} else {
+				d++
+			}
 		}
 	}
 	return d
@@ -753,21 +765,24 @@ func main() {
 		var m bool
 		var err error
 		var f *os.File
-		for _, arg := range flag.Args()[1:] {
-			m = false
-			f, err = os.Open(arg)
-			if err != nil {
-				print_err(err)
+		{
+			var arg string
+			for _, arg = range flag.Args()[1:] {
+				m = false
+				f, err = os.Open(arg)
+				if err != nil {
+					print_err(err)
+					ec = exit_code(ec, m, err)
+					continue
+				}
+				lp.filename = arg
+				if lp.begin {
+					lp.select_remn = false
+				}
+				m, err = section(sp, f)
 				ec = exit_code(ec, m, err)
-				continue
+				f.Close()
 			}
-			lp.filename = arg
-			if lp.begin {
-				lp.select_remn = false
-			}
-			m, err = section(sp, f)
-			ec = exit_code(ec, m, err)
-			f.Close()
 		}
 	}
 	os.Exit(ec)
