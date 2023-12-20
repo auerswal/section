@@ -684,7 +684,7 @@ func main() {
 	flag.BoolVar(&sp.top_level, "top-level", false, OD_TOP_LEVEL)
 	flag.BoolVar(&lp.with_filename, "with-filename", false,
 		OD_WITH_FILENAME)
-	flag.BoolVar(&sp.yaml_ind, "yaml", false, OD_YAML_IND)
+	flag.BoolVar(&sp.yaml_ind, "yaml-seq-indent", false, OD_YAML_IND)
 	// parse command line flags
 	flag.Parse()
 

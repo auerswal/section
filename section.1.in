@@ -109,7 +109,7 @@ Use non-default regular expression
 .I INDENT_RE
 to describe indentation.
 The
-.B \-\-yaml
+.B \-\-yaml\-seq\-indent
 option overrides this.
 .TP
 .SS \-\-tab\-size SIZE
@@ -137,7 +137,7 @@ A line matching the
 .I PATTERN
 selects the complete top level section.
 .TP
-.SS \-\-yaml
+.SS \-\-yaml\-seq\-indent
 Accept trailing YAML sequence (list) indentation in addition to white space
 based indentation.
 This results in considering a YAML sequence used as a value in a YAML mapping
@@ -261,7 +261,7 @@ YAML sequences are not handled well, because
 .B section
 does not parse the YAML format.
 Giving the
-.B \-\-yaml
+.B \-\-yaml\-seq\-indent
 option does not change this.
 The structure created by YAML sequence indicators is ignored by
 .BR section .

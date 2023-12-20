@@ -3,6 +3,7 @@ Noteworthy Changes in section Releases
 
 Upcoming Version ?.?.? (????-??-??):
 ------------------------------------
+ * Behavior change: the --yaml option is now called --yaml-seq-indent.
  * Documentation improvements.
 
 Version 0.8.0 (2023-05-22):

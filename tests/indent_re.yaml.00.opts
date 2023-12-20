@@ -1,1 +1,1 @@
---yaml --indent-re ^prefix:[[:space:]]*
+--yaml-seq-indent --indent-re ^prefix:[[:space:]]*

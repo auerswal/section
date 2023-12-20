@@ -1,1 +1,1 @@
---yaml --top-level
+--yaml-seq-indent --top-level

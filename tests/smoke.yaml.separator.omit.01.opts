@@ -1,1 +1,1 @@
---omit --yaml --separator
+--omit --yaml-seq-indent --separator

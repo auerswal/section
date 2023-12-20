@@ -1,1 +1,1 @@
---yaml --omit --ignore-case --ignore-blank
+--yaml-seq-indent --omit --ignore-case --ignore-blank

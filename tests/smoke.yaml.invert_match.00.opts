@@ -1,1 +1,1 @@
---yaml --invert-match
+--yaml-seq-indent --invert-match
