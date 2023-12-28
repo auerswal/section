@@ -295,14 +295,12 @@ type top_level_lm struct {
 	matched bool
 }
 
-// use .set_act() method from generic implementation of the simple
-// ("memoryless") section algorithm line memory for "top level"
+// set the line printer for normal lines for "top level" implementation
 func (lm *top_level_lm) set_act(lp *line_printer) {
 	lm.simple_line_memory.act = lp
 }
 
-// use .set_ign() method from generic implementation of the simple
-// ("memoryless") section algorithm line memory for "top level"
+// set the line printer for ignored lines for "top level" implementation
 func (lm *top_level_lm) set_ign(lp *line_printer) {
 	lm.simple_line_memory.ign = lp
 }
@@ -408,14 +406,12 @@ type enclosing_lm struct {
 	simple_line_memory
 }
 
-// use .set_act() method from the generic implementation of the simple
-// ("memoryless") section algorithm line memory for "enclosing"
+// set the line printer for normal lines for "enclosing" implementation
 func (lm *enclosing_lm) set_act(lp *line_printer) {
 	lm.simple_line_memory.act = lp
 }
 
-// use .set_ign() method from the generic implementation of the simple
-// ("memoryless") section algorithm line memory for "enclosing"
+// set the line printer for normal lines for "enclosing" implementation
 func (lm *enclosing_lm) set_ign(lp *line_printer) {
 	lm.simple_line_memory.ign = lp
 }
