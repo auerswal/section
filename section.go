@@ -229,6 +229,7 @@ func (lm *simple_line_memory) flush() (err error) {
 	}
 	var l line
 	for _, l = range *lm.lines {
+		in_sect = l.s_ind > -1
 		// ignore lines with unspecified indentation level
 		if l.l_ind == -1 {
 			err = lm.ign.print_line(&l.data, l.nr, false, in_sect)
@@ -237,7 +238,6 @@ func (lm *simple_line_memory) flush() (err error) {
 			}
 			continue
 		}
-		in_sect = l.s_ind > -1
 		cont_sect = in_sect && l.l_ind > l.s_ind
 		new_sect = in_sect && (!cont_sect || !prev_sect)
 		prev_sect = in_sect
@@ -450,9 +450,7 @@ func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	}
 	// mark lines comprising section with newly found indentation level
 	for ; i < nr_lines; i++ {
-		if (*lm.lines)[i].l_ind != -1 {
-			(*lm.lines)[i].s_ind = s_ind
-		}
+		(*lm.lines)[i].s_ind = s_ind
 	}
 	return s_ind, err
 }
