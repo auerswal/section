@@ -434,7 +434,7 @@ func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	// extend a new section from the last preceding line with lower
 	// indentation level to the new line that was just added
 	nr_lines := len(*lm.lines)
-	// find section start
+	// find section start: set i to number of possible section start
 	i := nr_lines - 1
 	for ; i > 0; i-- {
 		if (*lm.lines)[i].l_ind != -1 && (*lm.lines)[i].l_ind < s_ind {
@@ -443,6 +443,7 @@ func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	}
 	// determine section indentation level
 	if (*lm.lines)[i].l_ind != -1 {
+		// line in position i starts the section
 		s_ind = (*lm.lines)[i].l_ind
 	} else {
 		// line matching pattern starts the section
