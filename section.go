@@ -104,7 +104,7 @@ type line_printer struct {
 	has_printed bool
 	is_printing bool
 	quiet       bool
-	select_remn bool
+	select_rest bool
 	// values
 	filename         string
 	prefix_delim     string
@@ -119,11 +119,11 @@ type line_printer struct {
 
 // method to possibly print a line, depending on state and parameters
 func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err error) {
-	omit_selected := p.omit && (is || p.select_remn)
-	omit_unselected := !p.omit && !(is || p.select_remn)
-	is_transition := (tr || (!p.is_printing && p.omit)) && !p.select_remn
+	omit_selected := p.omit && (is || p.select_rest)
+	omit_unselected := !p.omit && !(is || p.select_rest)
+	is_transition := (tr || (!p.is_printing && p.omit)) && !p.select_rest
 	if p.begin && is {
-		p.select_remn = true
+		p.select_rest = true
 	}
 	if p.quiet || omit_selected || omit_unselected {
 		p.is_printing = false
@@ -763,7 +763,7 @@ func main() {
 			}
 			lp.filename = arg
 			if lp.begin {
-				lp.select_remn = false
+				lp.select_rest = false
 			}
 			m, err = section(sp, f)
 			ec = exit_code(ec, m, err)
