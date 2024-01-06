@@ -54,6 +54,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_BEGIN            = "also select all lines following first matched section"
 	OD_ENCLOSING        = "select sections enclosing matched lines"
 	OD_FIXED_STRING     = "PATTERN is fixed string, not regular expression"
+	OD_HEADERS          = "also select headers of selected sections"
 	OD_HELP             = "display help text and exit"
 	OD_IGNORE_BLANK     = "continue sections over blank lines"
 	OD_IGNORE_CASE      = "ignore case distinctions"
@@ -80,6 +81,7 @@ type section_params struct {
 	// options
 	enclosing    bool
 	fixed_string bool
+	headers      bool
 	ignore_blank bool
 	ignore_case  bool
 	invert_match bool
@@ -161,6 +163,7 @@ func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err e
 type line struct {
 	l_ind int    // indentation level of this line
 	s_ind int    // indentation level of section this line is in
+	selected bool   // is this line selected as part of a section?
 	nr    uint64 // line number
 	data  []byte // the bytes constituting the line itself
 }
@@ -169,6 +172,8 @@ type line struct {
 type line_memory interface {
 	set_act(lp *line_printer)
 	set_ign(lp *line_printer)
+	add_headers()
+	get_with_headers() bool
 	add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	flush() (err error)
 }
@@ -180,6 +185,7 @@ type simple_line_memory struct {
 	lines *[]line
 	act   *line_printer // default output function
 	ign   *line_printer // output function for ignored lines
+	with_headers bool          // add headers of selected sections
 }
 
 // set the line printer for normal lines
@@ -192,6 +198,16 @@ func (lm *simple_line_memory) set_ign(lp *line_printer) {
 	lm.ign = lp
 }
 
+// set the with_headers flag to also select section headers
+func (lm *simple_line_memory) add_headers() {
+	lm.with_headers = true
+}
+
+// query value of with_headers flag
+func (lm *simple_line_memory) get_with_headers() bool {
+	return lm.with_headers
+}
+
 // add a line to the collection according to simple ("memoryless") rules for
 // a generic implementation that does use extra memory to memorize lines
 func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
@@ -199,6 +215,7 @@ func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, 
 	new_line := line{
 		l_ind: l_ind,
 		s_ind: s_ind,
+		selected: s_ind > -1,
 		nr:    nr,
 	}
 	new_line.data = make([]byte, len(*l))
@@ -216,7 +233,8 @@ func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, 
 	return s_ind, nil
 }
 
-// print contents of a line collection and clear it
+// optionally add headers of selected sections, then print the contents of
+// a line collection and clear it
 // this works identically for generic implementations of the "memoryless",
 // "top level", and "enclosing" section algorithm variants
 func (lm *simple_line_memory) flush() (err error) {
@@ -224,15 +242,57 @@ func (lm *simple_line_memory) flush() (err error) {
 	in_sect := false
 	cont_sect := false
 	new_sect := false
+	// nothing to do if there are no saved lines
 	if lm.lines == nil {
 		return nil
 	}
+	// optionally add header lines of selected sections
+	// this also changes the indentation depth to the top level
 	var l line
+	if lm.get_with_headers() {
+		// determine minimum, i.e., top level, indentation
+		min_ind := -1
+		for _, l = range *lm.lines {
+			if l.l_ind != -1 {
+				min_ind = l.l_ind
+				break
+			}
+		}
+		// add headers and set section indentation to top level
+		last_ind := -1
+		nr_lines := len(*lm.lines)
+		i := nr_lines - 1
+		for ; i >= 0; i-- {
+			// ignored lines do not count as section headers
+			if (*lm.lines)[i].l_ind == -1 {
+				continue
+			}
+			// find last line selected as inside a section
+			if last_ind == -1 {
+				if (*lm.lines)[i].selected {
+					last_ind = (*lm.lines)[i].s_ind
+					(*lm.lines)[i].s_ind = min_ind
+				} else {
+					continue
+				}
+			}
+			// then add section headers to selected lines
+			if (*lm.lines)[i].l_ind < last_ind {
+				(*lm.lines)[i].selected = true
+				last_ind = (*lm.lines)[i].l_ind
+			} else if (*lm.lines)[i].l_ind > last_ind && (*lm.lines)[i].selected {
+				last_ind = (*lm.lines)[i].l_ind
+			}
+			// all lines are inside the top level section
+			(*lm.lines)[i].s_ind = min_ind
+		}
+	}
+	// send lines to line printer
 	for _, l = range *lm.lines {
 		in_sect = l.s_ind > -1
 		// ignore lines with unspecified indentation level
 		if l.l_ind == -1 {
-			err = lm.ign.print_line(&l.data, l.nr, false, in_sect)
+			err = lm.ign.print_line(&l.data, l.nr, false, l.selected)
 			if err != nil {
 				break
 			}
@@ -241,7 +301,7 @@ func (lm *simple_line_memory) flush() (err error) {
 		cont_sect = in_sect && l.l_ind > l.s_ind
 		new_sect = in_sect && (!cont_sect || !prev_sect)
 		prev_sect = in_sect
-		err = lm.act.print_line(&l.data, l.nr, new_sect, in_sect)
+		err = lm.act.print_line(&l.data, l.nr, new_sect, l.selected)
 		if err != nil {
 			break
 		}
@@ -265,6 +325,15 @@ func (lm *memoryless_lm) set_act(lp *line_printer) {
 // set the line printer for ignored lines for memoryless implementation
 func (lm *memoryless_lm) set_ign(lp *line_printer) {
 	lm.ign = lp
+}
+
+// memoryless implementation does not support adding headers
+func (lm *memoryless_lm) add_headers() {
+}
+
+// memoryless implementation does not support adding headers
+func (lm *memoryless_lm) get_with_headers() bool {
+	return false
 }
 
 // the simple section algorithm can be implemented "memoryless", i.e.,
@@ -303,6 +372,15 @@ func (lm *top_level_lm) set_act(lp *line_printer) {
 // set the line printer for ignored lines for "top level" implementation
 func (lm *top_level_lm) set_ign(lp *line_printer) {
 	lm.simple_line_memory.ign = lp
+}
+
+// all headers are already part of the selected "top level" section
+func (lm *top_level_lm) add_headers() {
+}
+
+// no special action required for headers, so always return false
+func (lm *top_level_lm) get_with_headers() bool {
+	return false
 }
 
 // add a line to the collection according to "top level" section rules
@@ -416,6 +494,16 @@ func (lm *enclosing_lm) set_ign(lp *line_printer) {
 	lm.simple_line_memory.ign = lp
 }
 
+// also select headers in addition to enclosing section
+func (lm *enclosing_lm) add_headers() {
+	lm.simple_line_memory.with_headers = true
+}
+
+// query value of with_headers flag
+func (lm *enclosing_lm) get_with_headers() bool {
+	return lm.simple_line_memory.with_headers
+}
+
 // add a line to the collection according to "enclosing" section rules
 func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
 	var err error
@@ -452,6 +540,7 @@ func (lm *enclosing_lm) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error)
 	// mark lines comprising section with newly found indentation level
 	for ; i < nr_lines; i++ {
 		(*lm.lines)[i].s_ind = s_ind
+		(*lm.lines)[i].selected = true
 	}
 	return s_ind, err
 }
@@ -647,6 +736,7 @@ func main() {
 	flag.BoolVar(&sp.enclosing, "enclosing", false, OD_ENCLOSING)
 	flag.BoolVar(&sp.fixed_string, "fixed-string", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
+	flag.BoolVar(&sp.headers, "headers", false, OD_HEADERS)
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_blank, "ignore-blank", false, OD_IGNORE_BLANK)
@@ -703,13 +793,19 @@ func main() {
 			usage_err(errors.New("invalid --indent-re argument:"))
 		}
 	}
-	// line memory selection
+	// line memory selection (also affected by --headers)
 	if sp.top_level {
 		sp.memory = new(top_level_lm)
 	} else if sp.enclosing {
 		sp.memory = new(enclosing_lm)
+	} else if sp.headers {
+		sp.memory = new(simple_line_memory)
 	} else {
 		sp.memory = new(memoryless_lm)
+	}
+	// also select section headers?
+	if sp.headers {
+		sp.memory.add_headers()
 	}
 	// already parameterized line printer as normal action
 	sp.memory.set_act(&lp)

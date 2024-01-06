@@ -6,6 +6,7 @@ Upcoming Version ?.?.? (????-??-??):
  * Behavior change: the --yaml option is now called --yaml-seq-indent.
  * Bug fix: correctly track in or out of section status for ignored
    lines with "--enclosing".
+ * New option "--headers" to also select headers of selected sections.
  * Documentation improvements.
 
 Version 0.8.0 (2023-05-22):
