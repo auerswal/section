@@ -1,0 +1,9 @@
+PE1-oob.lab.local:
+- name: Ethernet5/0
+- name: Ethernet6/1
+PE2-oob.lab.local:
+- name: Ethernet6/2
+CE1-oob.lab.local:
+- name: Ethernet1/0
+CE2-oob.lab.local:
+- name: Ethernet1/0

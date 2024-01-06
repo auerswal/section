@@ -1,0 +1,55 @@
+!
+# This file is patterned after widely used router configuration files,
+# but not intended to actually work on any existing router.  Used with
+# different patterns and option to provide more realistic test cases.
+!
+hostname router42
+!
+ip domain name example
+ip name-server 192.0.2.13
+ipv6 name-server 2001:db8:4711::13
+!
+ description IPv4-only transit network
+ ip address 198.51.100.47/31
+!
+ description IPv4-only transit network
+ ip address 192.51.100.11/31
+!
+ description local endsystems (dual-stack)
+ ip address 203.0.113.2/24
+ ipv6 address 2001:db8:113::a/64
+ ipv6 address fe80::1 link-local
+ vrrp 1 priority 250
+ vrrp 1 ipv6 2001:db8:113::1
+ vrrp 1 ipv6 fe80::1 link-local
+ vrrp 2 priority 250
+ vrrp 2 ip 203.0.113.1
+!
+interface Ethernet3
+ description BGP peering
+ ip address 192.0.2.0/31
+ ipv6 address 2001:db8::42/64
+!
+ description IPv6-only transit network
+ ipv6 address 2001:db8:2::42/64
+!
+ ip address 192.0.2.42/32
+ ipv6 address 2001:db8:1::42/128
+!
+!
+!
+ router-id 192.0.2.42
+ no bgp default ipv4-unicast
+ neighbor 192.0.2.1 remote-as 64497
+ neighbor 2001:db8::1 remote-as 64498
+ !
+ address-family ipv4 unicast
+  neighbor 192.0.2.1 activate
+  network 198.51.100.0/24
+ exit-address-family
+ !
+  neighbor 2001:db8::1 activate
+  network 2001:db8:5009::/64
+ exit-address-family
+!
+ipv6 route 2001:db8:5009::/64 Null0

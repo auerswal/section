@@ -1,0 +1,19 @@
+ip ospf name-lookup
+!
+interface Ethernet0
+ ip ospf 4711 area 51
+!
+interface Ethernet1
+ ip ospf 4711 area 51
+!
+interface Ethernet2
+ ip ospf 4711 area 51
+!
+interface Loopback0
+ ip ospf 4711 area 51
+!
+router ospf 4711
+ router-id 192.0.2.42
+ passive-interface default
+ no passive-interface Ethernet0
+ no passive-interface Ethernet1

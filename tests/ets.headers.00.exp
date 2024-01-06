@@ -1,0 +1,5 @@
+!
+ interface vlan.0.11
+  no shutdown
+ interface vlan.0.47
+  no shutdown

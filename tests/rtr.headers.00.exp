@@ -1,0 +1,22 @@
+ipv6 name-server 2001:db8:4711::13
+ipv6 ospfv3 name-lookup
+interface Ethernet2
+ ipv6 address 2001:db8:113::a/64
+ ipv6 address fe80::1 link-local
+ ipv6 ospfv3 4711 area 51
+ vrrp 1 ipv6 2001:db8:113::1
+ vrrp 1 ipv6 fe80::1 link-local
+interface Ethernet3
+ ipv6 address 2001:db8::42/64
+interface Ethernet4
+ ipv6 address 2001:db8:2::42/64
+ ipv6 ospfv3 4711 area 51
+interface Loopback0
+ ipv6 address 2001:db8:1::42/128
+ ipv6 ospfv3 4711 area 51
+router bgp 64496
+ address-family ipv6 unicast
+  neighbor 2001:db8::1 activate
+  network 2001:db8:5009::/64
+  redistribute ospfv3 4711
+ipv6 route 2001:db8:5009::/64 Null0

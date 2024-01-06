@@ -1,0 +1,12 @@
+router bgp 64496
+ no bgp default ipv4-unicast
+ neighbor 192.0.2.1 remote-as 64497
+ neighbor 2001:db8::1 remote-as 64498
+ address-family ipv4 unicast
+  neighbor 192.0.2.1 activate
+  network 198.51.100.0/24
+ exit-address-family
+ address-family ipv6 unicast
+  neighbor 2001:db8::1 activate
+  network 2001:db8:5009::/64
+ exit-address-family
