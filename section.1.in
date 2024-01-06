@@ -55,6 +55,27 @@ Write a help message to standard output.
 .SS \-V, \-\-version
 Write version information to standard output.
 
+.SS Use a non-default section algorithm variant:
+.TP
+.SS \-\-enclosing
+Sections enclose the line matching the
+.IR PATTERN .
+Each section starts at the last line preceding the line matching the
+.I PATTERN
+with less indentation.
+If no such line exists, the section starts with the line matching the
+.IR PATTERN .
+.TP
+.SS \-\-top\-level
+Sections always start from the
+.I top
+.IR level ,
+i.e., the minimum indentation level, instead of from the line matching the
+.IR PATTERN .
+A line matching the
+.I PATTERN
+selects the complete top level section.
+
 .SS Control pattern matching:
 .TP
 .SS \-F, \-\-fixed\-string
@@ -73,42 +94,6 @@ starting with
 .IR PATTERN .
 
 .SS Control section boundary determination:
-.TP
-.SS \-\-begin
-Select all lines following the first line selected by the chosen section
-algorithm variant.
-If multiple
-.IR FILE s
-are given,
-each
-.I FILE
-is considered independently.
-.TP
-.SS \-\-enclosing
-Sections enclose the line matching the
-.IR PATTERN .
-Each section starts at the last line preceding the line matching the
-.I PATTERN
-with less indentation.
-If no such line exists, the section starts with the line matching the
-.IR PATTERN .
-.TP
-.SS \-\-headers
-Also select
-.I headers
-of the sections selected according to the chosen algorithm,
-starting from the
-.I top
-.IR level .
-Sections thus start from the
-.I top
-.IR level ,
-even though only some lines of such a
-.I top level
-section may be selected.
-This option has no effect when combined with the
-.B \-\-top\-level
-option.
 .TP
 .SS \-\-ignore\-blank
 Ignore the indentation level of blank lines,
@@ -145,16 +130,6 @@ Setting
 .I SIZE
 to 1 results in treating tab characters identically to space characters.
 .TP
-.SS \-\-top\-level
-Sections always start from the
-.I top
-.IR level ,
-i.e., the minimum indentation level, instead of from the line matching the
-.IR PATTERN .
-A line matching the
-.I PATTERN
-selects the complete top level section.
-.TP
 .SS \-\-yaml\-seq\-indent
 Accept trailing YAML sequence (list) indentation in addition to white space
 based indentation.
@@ -164,6 +139,35 @@ even if the
 .I dash
 has the same indentation depth as the key.
 
+.SS Select additional lines:
+.TP
+.SS \-\-begin
+Select all lines following the first line selected by the chosen section
+algorithm variant.
+If multiple
+.IR FILE s
+are given,
+each
+.I FILE
+is considered independently.
+.TP
+.SS \-\-headers
+Also select
+.I headers
+of the sections selected according to the chosen algorithm,
+starting from the
+.I top
+.IR level .
+Sections thus start from the
+.I top
+.IR level ,
+even though only some lines of such a
+.I top level
+section may be selected.
+This option has no effect when combined with the
+.B \-\-top\-level
+option.
+
 .SS Control output contents:
 .TP
 .SS \-\-omit
@@ -172,6 +176,13 @@ print everything else instead.
 .TP
 .SS \-\-omit\-ignored
 Do not print lines that are ignored when determining section breaks.
+.TP
+.SS \-q, \-\-quiet, \-\-silent
+Suppress all normal output.
+The exit code can be used to determine if the
+.I PATTERN
+was matched or not, or if an error occurred.
+Error messages are still printed.
 
 .SS Control output format:
 .TP
@@ -201,13 +212,6 @@ instead of the default of a colon
 as prefix delimiter.
 .I DELIMITER
 need not be a single character.
-.TP
-.SS \-q, \-\-quiet, \-\-silent
-Suppress all normal output.
-The exit code can be used to determine if the
-.I PATTERN
-was matched or not, or if an error occurred.
-Error messages are still printed.
 .TP
 .SS \-\-separator
 Print a separator line between matched sections.
