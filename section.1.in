@@ -75,7 +75,8 @@ starting with
 .SS Control section boundary determination:
 .TP
 .SS \-\-begin
-Select the first matching section together with all following lines.
+Select all lines following the first line selected by the chosen section
+algorithm variant.
 If multiple
 .IR FILE s
 are given,
