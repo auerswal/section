@@ -16,12 +16,14 @@ in each
 .I FILE
 (or standard input if no
 .I FILE
-is given), and prints the sections determined by matching lines
-together with the selected section algorithm variant
+is given), and prints the sections selected by matching lines
+together with the chosen section algorithm variant
 to standard output.
 .P
 A section comprises all deeper indented lines directly following the
 starting line of the section.
+The starting line of a section is also called the section
+.IR header .
 .P
 By default, sections are started by lines matching the
 .IR PATTERN .
