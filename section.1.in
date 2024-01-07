@@ -154,20 +154,9 @@ each
 is considered independently.
 .TP
 .SS \-\-headers
-Also select
-.IR headers ,
-i.e.,
-starting lines of enclosing sections,
-of the sections selected according to the chosen algorithm,
-starting from the
-.I top
-.IR level .
-Sections thus start from the
-.I top
-.IR level ,
-even though only some lines of such a
-.I top level
-section may be selected.
+In addition to the sections selected according to the chosen algorithm,
+also select starting lines (headers) of enclosing sections,
+up to the top level.
 This option has no effect when combined with the
 .B \-\-top\-level
 option.
