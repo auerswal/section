@@ -153,7 +153,9 @@ is considered independently.
 .TP
 .SS \-\-headers
 Also select
-.I headers
+.IR headers ,
+i.e.,
+starting lines of enclosing sections,
 of the sections selected according to the chosen algorithm,
 starting from the
 .I top
