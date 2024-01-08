@@ -22,7 +22,7 @@ to standard output.
 .P
 A section comprises all deeper indented lines directly following the
 starting line of the section.
-The starting line of a section is also called the section
+The starting line of a section can also be called the section
 .IR header .
 .P
 By default, sections are started by lines matching the
