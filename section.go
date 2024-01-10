@@ -161,11 +161,11 @@ func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err e
 
 // one line with added information
 type line struct {
-	l_ind int    // indentation level of this line
-	s_ind int    // indentation level of section this line is in
+	l_ind    int    // indentation level of this line
+	s_ind    int    // indentation level of section this line is in
 	selected bool   // is this line selected as part of a section?
-	nr    uint64 // line number
-	data  []byte // the bytes constituting the line itself
+	nr       uint64 // line number
+	data     []byte // the bytes constituting the line itself
 }
 
 // interface to a collection of lines with added information
@@ -182,9 +182,9 @@ type line_memory interface {
 // of the simple ("memoryless") section algorithm
 // (this is not a memoryless implementation)
 type simple_line_memory struct {
-	lines *[]line
-	act   *line_printer // default output function
-	ign   *line_printer // output function for ignored lines
+	lines        *[]line
+	act          *line_printer // default output function
+	ign          *line_printer // output function for ignored lines
 	with_headers bool          // add headers of selected sections
 }
 
@@ -213,10 +213,10 @@ func (lm *simple_line_memory) get_with_headers() bool {
 func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, error) {
 	// create a new data structure for the line
 	new_line := line{
-		l_ind: l_ind,
-		s_ind: s_ind,
+		l_ind:    l_ind,
+		s_ind:    s_ind,
 		selected: s_ind > -1,
-		nr:    nr,
+		nr:       nr,
 	}
 	new_line.data = make([]byte, len(*l))
 	copy(new_line.data, *l)
