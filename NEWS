@@ -1,8 +1,12 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Upcoming Version 0.9.0 (2024-01-10):
-------------------------------------
+Version 0.9.1 (2024-01-12):
+---------------------------
+ * Typo fix in this NEWS file.
+
+Version 0.9.0 (2024-01-10):
+---------------------------
  * Behavior change: the --yaml option is now called --yaml-seq-indent.
  * Bug fix: correctly track in or out of section status for ignored
    lines with "--enclosing".
