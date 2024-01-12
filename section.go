@@ -13,7 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 // section - print indented sections of a text file matching a pattern
@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.9.1"
+	VERSION = "0.9.1+"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -48,7 +48,7 @@ const (
 	// documentation
 	DESC      = "prints indented text sections selected by matching a pattern."
 	COPYRIGHT = `Copyright (C) 2019-2024 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
 	OD_BEGIN            = "also select all lines following first matched section"

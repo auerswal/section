@@ -290,7 +290,7 @@ was written by Erik Auerswald <auerswal@unix\-ag.uni\-kl.de>.
 .SH COPYRIGHT
 Copyright \(co @CRYEARS@ Erik Auerswald.
 License GPLv3+: GNU GPL version 3 or later
-.UR http://gnu.org/licenses/gpl.html
+.UR https://gnu.org/licenses/gpl.html
 .UE
 .P
 This is free software: you are free to change and redistribute it.
