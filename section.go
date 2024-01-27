@@ -794,7 +794,7 @@ func main() {
 		}
 	}
 	// line memory selection (also affected by --headers)
-	if sp.top_level {
+	if sp.top_level || (sp.headers && lp.begin) {
 		sp.memory = new(top_level_lm)
 	} else if sp.enclosing {
 		sp.memory = new(enclosing_lm)
