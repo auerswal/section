@@ -73,6 +73,9 @@ Each section starts at the last line preceding the line matching the
 with less indentation.
 If no such line exists, the section starts with the line matching the
 .IR PATTERN .
+This option has no effect when combined with the
+.B \-\-top\-level
+option.
 .TP
 .SS \-\-top\-level
 Sections always start from the
@@ -83,9 +86,6 @@ i.e., the minimum indentation level, instead of from the line matching the
 A line matching the
 .I PATTERN
 selects the complete top level section.
-This option overrides the
-.B \-\-enclosing
-option.
 
 .SS Control pattern matching:
 .TP
