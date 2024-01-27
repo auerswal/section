@@ -58,6 +58,12 @@ Write a help message to standard output.
 Write version information to standard output.
 
 .SS Use a non-default section algorithm variant:
+The
+.B section
+filter can use one of several ways to determine the start of a selected section.
+By default,
+sections start with a line that matches the
+.IR PATTERN .
 .TP
 .SS \-\-enclosing
 Sections enclose the line matching the
@@ -77,6 +83,9 @@ i.e., the minimum indentation level, instead of from the line matching the
 A line matching the
 .I PATTERN
 selects the complete top level section.
+This option overrides the
+.B \-\-enclosing
+option.
 
 .SS Control pattern matching:
 .TP
