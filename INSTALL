@@ -34,6 +34,7 @@ Tool is, the Go Tool is used to build section.
 Prerequisites
 -------------
 - A Go compiler, e.g., GCC Go or the Go Tool.
+  - The code only uses Go's standard library, no external dependencies.
 - A system sufficiently compatible to POSIX and GNU.
 - POSIX (or compatible) utilities: grep, printf, sh, sed, test
 - GNU (or compatible) utilities: date, gzip, install, make, tar
