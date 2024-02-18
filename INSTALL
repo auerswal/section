@@ -60,9 +60,10 @@ implications of doing so:
 
   - Starting with some version, the Go Tool communicates with the Google
     module proxy and checksum database.
-  - In 2023, there are plans to add telemetry to the Go Tool with the
+  - In 2023, there were plans to add telemetry to the Go Tool with the
     intent to collect usage data and transmit it to Google servers and
-    store it there.
+    store it there.  While this was initially planned to be opt-out,
+    the plan later changed to use opt-in.
   - Starting with Go versions 1.19.11, 1.20.6, and 1.21rc1, invoking
     the Go Tool might download and execute code from the Internet.
 
