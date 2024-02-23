@@ -225,8 +225,7 @@ func (lm *simple_line_memory) add(l *[]byte, nr uint64, l_ind, s_ind int) (int, 
 		lm.lines = new([]line)
 	}
 	// append the line
-	tmp := append(*lm.lines, new_line)
-	lm.lines = &tmp
+	*lm.lines = append(*lm.lines, new_line)
 	// the simple ("memoryless") section algorithm does not adjust meta
 	// data of previous lines, and does not adjust the section indentation
 	// level
