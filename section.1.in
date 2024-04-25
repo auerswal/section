@@ -107,16 +107,25 @@ starting with
 .SS Control section boundary determination:
 .TP
 .SS \-\-ignore\-blank
-Ignore the indentation level of blank lines,
-so that sections always continue across them.
+Ignore blank lines when determining section boundaries.
+An ignored line cannot match the
+.IR PATTERN .
+The indentation level of ignored lines is not considered,
+sections always continue across them.
 .TP
 .SS \-\-ignore\-re IGNORE_RE
-Ignore the indentation level of lines matching
-.IR IGNORE_RE ,
-so that sections always continue across them.
+Ignore lines matching
+.I IGNORE_RE
+when determining section boundaries.
+An ignored line cannot match the
+.IR PATTERN .
+The indentation level of ignored lines is not considered,
+sections always continue across them.
 The
 .B \-\-ignore\-blank
-option overrides this.
+option overrides the
+.B \-\-ignore\-re
+option.
 .TP
 .SS \-\-indent\-re INDENT_RE
 Use non-default regular expression
