@@ -105,27 +105,31 @@ starting with
 .IR PATTERN .
 
 .SS Control section boundary determination:
+Section boundary determination is based on matching the
+.I PATTERN
+and the indentation level of lines.
+.P
+Specific lines can be ignored for section boundary determination.
+Ignored lines are not checked for matching the
+.IR PATTERN .
+Therefore they do not start a section.
+The indentation level of ignored lines is not considered either,
+therefore sections always continue across them.
 .TP
 .SS \-\-ignore\-blank
 Ignore blank lines when determining section boundaries.
-An ignored line cannot match the
-.IR PATTERN .
-The indentation level of ignored lines is not considered,
-sections always continue across them.
 .TP
 .SS \-\-ignore\-re IGNORE_RE
 Ignore lines matching
 .I IGNORE_RE
 when determining section boundaries.
-An ignored line cannot match the
-.IR PATTERN .
-The indentation level of ignored lines is not considered,
-sections always continue across them.
 The
 .B \-\-ignore\-blank
 option overrides the
 .B \-\-ignore\-re
 option.
+.TP
+By default, leading space and tab characters constitute a line's indentation.
 .TP
 .SS \-\-indent\-re INDENT_RE
 Use non-default regular expression
