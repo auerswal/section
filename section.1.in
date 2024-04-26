@@ -128,8 +128,10 @@ The
 option overrides the
 .B \-\-ignore\-re
 option.
-.TP
-By default, leading space and tab characters constitute a line's indentation.
+.P
+By default, leading space and tab characters constitute the indentation
+of a line.
+Indentation depth determines which lines form a section.
 .TP
 .SS \-\-indent\-re INDENT_RE
 Use non-default regular expression
