@@ -112,7 +112,7 @@ and the indentation level of lines.
 Specific lines can be ignored for section boundary determination.
 Ignored lines are not checked for matching the
 .IR PATTERN .
-Therefore they do not start a section.
+Therefore they do not select a section.
 The indentation level of ignored lines is not considered either,
 therefore sections always continue across them.
 .TP
@@ -192,7 +192,7 @@ Omit (exclude) matched sections,
 print everything else instead.
 .TP
 .SS \-\-omit\-ignored
-Do not print lines that are ignored when determining section breaks.
+Do not print lines that are ignored when determining section boundaries.
 .TP
 .SS \-q, \-\-quiet, \-\-silent
 Suppress all normal output.
