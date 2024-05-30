@@ -101,7 +101,7 @@ so that characters that differ only in case match each other.
 .SS \-\-invert\-match
 Match sections
 .B not
-starting with
+selected with the
 .IR PATTERN .
 
 .SS Control section boundary determination:
