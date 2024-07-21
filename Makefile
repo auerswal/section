@@ -22,7 +22,11 @@ GC      := $(if $(shell which gccgo),gccgo,go build)
 all: $(BINARY) $(MAN)
 
 $(BINARY): $(SOURCE) Makefile
+ifeq ($(GC),gccgo)
+	$(GC) -static -o $@ $<
+else
 	$(GC) -o $@ $<
+endif
 
 $(MAN): $(MANSRC) Makefile generate_man_page_date.sh section.go NEWS
 	sed -e 's/@VERSION@/$(VERSION)/' \
