@@ -17,16 +17,12 @@ CRYEARS := $(shell sed -En 's/^ +Copyright[^0-9]+([0-9]+(-[0-9]+)?) .*$$/\1/p' s
 SRCDIR  := $(BINARY)-$(VERSION)
 ALLSRC  := Makefile $(SOURCE) $(MANSRC) $(DOCS) $(MAN)
 ARCHIVE := $(SRCDIR).tar.gz
-GC      := $(if $(shell which gccgo),gccgo,go build)
+GC      := $(if $(shell which gccgo),gccgo -static,go build)
 
 all: $(BINARY) $(MAN)
 
 $(BINARY): $(SOURCE) Makefile
-ifeq ($(GC),gccgo)
-	$(GC) -static -o $@ $<
-else
 	$(GC) -o $@ $<
-endif
 
 $(MAN): $(MANSRC) Makefile generate_man_page_date.sh section.go NEWS
 	sed -e 's/@VERSION@/$(VERSION)/' \
