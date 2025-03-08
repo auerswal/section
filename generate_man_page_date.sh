@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # generate_man_page_date.sh - find a suitable date for the man page
-# Copyright (C) 2021-2023  Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+# Copyright (C) 2021-2025  Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 # when in a git repository, use modification date of man page source
 if type 'git' >/dev/null 2>&1 && test -d '.git'; then
-  git log -n1 --date=short 'section.1.in' | awk '/^Date:/ { print $2 }'
+  git log -n1 --format='format:%cs' 'section.1.in'
   exit
 fi
 # when a man page is available, keep its date
