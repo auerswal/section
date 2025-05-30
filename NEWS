@@ -1,7 +1,7 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Version ?.?.? (????-??-??):
+Version 0.9.2 (2025-05-30):
 ---------------------------
  * Documentation improvements.
  * Support building section with Go Tool 1.16 and newer.
