@@ -1,0 +1,6 @@
+==> file_header.omit.00.in <==
+one
+ line
+==> file_header.omit.00.in.2 <==
+three
+ line

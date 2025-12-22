@@ -1,6 +1,13 @@
 Noteworthy Changes in section Releases
 ======================================
 
+Version 0.??.? (????-??-??):
+----------------------------
+ * New option "--file-header" to print a header showing the file name
+   in front of the first output line from a file.
+ * New options "--file-header-prefix" and "--file-header-suffix" to
+   customize the file header format.
+
 Version 0.9.2 (2025-05-30):
 ---------------------------
  * Documentation improvements.

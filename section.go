@@ -33,7 +33,7 @@ import (
 const (
 	// program information
 	PROG    = "section"
-	VERSION = "0.9.2"
+	VERSION = "0.9.2+"
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
@@ -42,38 +42,43 @@ const (
 	BLANK_RE    = `^[ \t]*$`
 	RE_IGN_CASE = `(?i)`
 	// default values
-	DEF_PREFIX_DELIM = ":"
-	DEF_SEPARATOR    = "--"
-	DEF_STDIN_LABEL  = "(standard input)"
+	DEF_FILE_HEADER_PREFIX = "==> "
+	DEF_FILE_HEADER_SUFFIX = " <=="
+	DEF_PREFIX_DELIM       = ":"
+	DEF_SEPARATOR          = "--"
+	DEF_STDIN_LABEL        = "(standard input)"
 	// documentation
 	DESC      = "prints indented text sections selected by matching a pattern."
 	COPYRIGHT = `Copyright (C) 2019-2025 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.`
-	OD_BEGIN            = "also select all lines following first matched section"
-	OD_ENCLOSING        = "select sections enclosing matched lines"
-	OD_FIXED_STRING     = "PATTERN is fixed string, not regular expression"
-	OD_HEADERS          = "also select headers of selected sections"
-	OD_HELP             = "display help text and exit"
-	OD_IGNORE_BLANK     = "continue sections over blank lines"
-	OD_IGNORE_CASE      = "ignore case distinctions"
-	OD_IGNORE_RE        = "continue sections over lines matching regexp"
-	OD_INDENT_RE        = "regular expression defining indentation"
-	OD_INVERT_MATCH     = "match sections not starting with PATTERN"
-	OD_LINE_NUMBER      = "prefix output lines with line number"
-	OD_OMIT             = "omit (exclude) matched sections, print everything else"
-	OD_OMIT_IGNORED     = "omit lines ignored as section breaks"
-	OD_PREFIX_DELIM     = "string to delimit a prefix"
-	OD_QUIET            = "suppress all normal output"
-	OD_SEPARATOR        = "print a separator line between sections"
-	OD_SEPARATOR_STRING = "specify separator string"
-	OD_STDIN_LABEL      = "label in place of file name for standard input"
-	OD_TAB_SIZE         = "number of characters between two tab stops"
-	OD_TOP_LEVEL        = "sections start from minimum indentation level"
-	OD_WITH_FILENAME    = "prefix output lines with file name"
-	OD_YAML_IND         = "additionally allow YAML list indentation"
-	OD_VERSION          = "display version and exit"
+	OD_BEGIN              = "also select all lines following first matched section"
+	OD_ENCLOSING          = "select sections enclosing matched lines"
+	OD_FILE_HEADER        = "print file header before each file with output"
+	OD_FILE_HEADER_PREFIX = "specify file header prefix"
+	OD_FILE_HEADER_SUFFIX = "specify file header suffix"
+	OD_FIXED_STRING       = "PATTERN is fixed string, not regular expression"
+	OD_HEADERS            = "also select headers of selected sections"
+	OD_HELP               = "display help text and exit"
+	OD_IGNORE_BLANK       = "continue sections over blank lines"
+	OD_IGNORE_CASE        = "ignore case distinctions"
+	OD_IGNORE_RE          = "continue sections over lines matching regexp"
+	OD_INDENT_RE          = "regular expression defining indentation"
+	OD_INVERT_MATCH       = "match sections not starting with PATTERN"
+	OD_LINE_NUMBER        = "prefix output lines with line number"
+	OD_OMIT               = "omit (exclude) matched sections, print everything else"
+	OD_OMIT_IGNORED       = "omit lines ignored as section breaks"
+	OD_PREFIX_DELIM       = "string to delimit a prefix"
+	OD_QUIET              = "suppress all normal output"
+	OD_SEPARATOR          = "print a separator line between sections"
+	OD_SEPARATOR_STRING   = "specify separator string"
+	OD_STDIN_LABEL        = "label in place of file name for standard input"
+	OD_TAB_SIZE           = "number of characters between two tab stops"
+	OD_TOP_LEVEL          = "sections start from minimum indentation level"
+	OD_WITH_FILENAME      = "prefix output lines with file name"
+	OD_YAML_IND           = "additionally allow YAML list indentation"
+	OD_VERSION            = "display version and exit"
 )
 
 // parameterize section algorithm
@@ -103,16 +108,20 @@ type section_params struct {
 // line printer object
 type line_printer struct {
 	// state
-	has_printed bool
-	is_printing bool
-	quiet       bool
-	select_rest bool
+	has_printed      bool
+	has_printed_file bool
+	is_printing      bool
+	quiet            bool
+	select_rest      bool
 	// values
-	filename         string
-	prefix_delim     string
-	separator_string string
+	file_header_prefix string
+	file_header_suffix string
+	filename           string
+	prefix_delim       string
+	separator_string   string
 	// features
 	begin         bool
+	file_header   bool
 	line_number   bool
 	omit          bool
 	separator     bool
@@ -130,6 +139,13 @@ func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err e
 	if p.quiet || omit_selected || omit_unselected {
 		p.is_printing = false
 		return nil
+	}
+	if p.file_header && !p.has_printed_file {
+		_, err = os.Stdout.WriteString(p.file_header_prefix +
+			p.filename + p.file_header_suffix + "\n")
+		if err != nil {
+			return
+		}
 	}
 	if p.separator && p.has_printed && is_transition {
 		_, err = os.Stdout.WriteString(p.separator_string + "\n")
@@ -154,6 +170,7 @@ func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err e
 		return
 	}
 	p.has_printed = true
+	p.has_printed_file = true
 	p.is_printing = true
 	_, err = os.Stdout.WriteString("\n")
 	return
@@ -713,8 +730,10 @@ func main() {
 	}
 	// default line printer
 	lp := line_printer{
-		separator_string: DEF_SEPARATOR,
-		filename:         "",
+		file_header_prefix: DEF_FILE_HEADER_PREFIX,
+		file_header_suffix: DEF_FILE_HEADER_SUFFIX,
+		separator_string:   DEF_SEPARATOR,
+		filename:           "",
 	}
 
 	// error logging
@@ -733,6 +752,11 @@ func main() {
 	var ignore_re, indent_re string
 	flag.BoolVar(&lp.begin, "begin", false, OD_BEGIN)
 	flag.BoolVar(&sp.enclosing, "enclosing", false, OD_ENCLOSING)
+	flag.BoolVar(&lp.file_header, "file-header", false, OD_FILE_HEADER)
+	flag.StringVar(&lp.file_header_prefix, "file-header-prefix",
+		DEF_FILE_HEADER_PREFIX, OD_FILE_HEADER_PREFIX)
+	flag.StringVar(&lp.file_header_suffix, "file-header-suffix",
+		DEF_FILE_HEADER_SUFFIX, OD_FILE_HEADER_SUFFIX)
 	flag.BoolVar(&sp.fixed_string, "fixed-string", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.headers, "headers", false, OD_HEADERS)
@@ -857,6 +881,7 @@ func main() {
 				continue
 			}
 			lp.filename = arg
+			lp.has_printed_file = false
 			if lp.begin {
 				lp.select_rest = false
 			}

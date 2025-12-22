@@ -203,6 +203,28 @@ Error messages are still printed.
 
 .SS Control output format:
 .TP
+.SS \-\-file\-header
+Print a file header showing the file name in front of the first output
+line from a file.
+.TP
+.SS \-\-file\-header\-prefix PREFIX
+Use the given
+.I PREFIX
+instead of a right pointing double arrow followed by a space
+.RB ( "==> " )
+in front of the file name with the
+.B \-\-file\-header
+option.
+.TP
+.SS \-\-file\-header\-suffix SUFFIX
+Use the given
+.I SUFFIX
+instead of a space followed by a left pointing double arrow
+.RB ( " <==" )
+after the file name with the
+.B \-\-file\-header
+option.
+.TP
 .SS \-\-label LABEL
 Use
 .I LABEL

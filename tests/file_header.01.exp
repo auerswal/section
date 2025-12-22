@@ -1,0 +1,8 @@
+==> file_header.01.in <==
+a
+ b
+c
+ d
+==> file_header.01.in.1 <==
+g
+ h
