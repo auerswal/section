@@ -16,6 +16,9 @@ If you want to install it to your system, type:
 
     make install
 
+The Makefile also supports the DESTDIR variable used, e.g., for packaging
+in Debian.
+
 To change the default install location of /usr/local to /usr, type:
 
     make PREFIX=/usr install
@@ -29,6 +32,16 @@ access.
 When using make to build section and the GCC Go compiler is available,
 it is used.  In case the GCC Go compiler is not available, but the Go
 Tool is, the Go Tool is used to build section.
+
+The make-based build process creates a statically linked binary by
+default. To build a dynamically linked binary with the GCC Go compiler,
+type:
+
+    make GC=gccgo
+
+The statically linked binary is larger than the dynamically linked one,
+but it starts more quickly.  Dynamic linking might be preferable when
+packaging for a GNU/Linux distribution.
 
 
 Prerequisites
