@@ -1,0 +1,11 @@
+==> file_header.file_separator.separator.02.in <==
+a
+ b
+--
+e
+ f
+%%
+==> file_header.file_separator.separator.02.in.2 <==
+--
+o
+ p

@@ -1,0 +1,8 @@
+==> file_header.file_separator.separator.00.in <==
+one
+ indented
+%%
+==> file_header.file_separator.separator.00.in.2 <==
+--
+three
+ indented
