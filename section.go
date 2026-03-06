@@ -44,6 +44,7 @@ const (
 	// default values
 	DEF_FILE_HEADER_PREFIX = "==> "
 	DEF_FILE_HEADER_SUFFIX = " <=="
+	DEF_FILE_SEPARATOR_STRING = "%%"
 	DEF_PREFIX_DELIM       = ":"
 	DEF_SEPARATOR          = "--"
 	DEF_STDIN_LABEL        = "(standard input)"
@@ -58,6 +59,8 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_FILE_HEADER        = "print file header before each file with output"
 	OD_FILE_HEADER_PREFIX = "specify file header prefix"
 	OD_FILE_HEADER_SUFFIX = "specify file header suffix"
+	OD_FILE_SEPARATOR     = "print a separator line between files"
+	OD_FILE_SEPARATOR_STRING = "specify file separator string"
 	OD_FIXED_STRING       = "PATTERN is fixed string, not regular expression"
 	OD_HEADERS            = "also select headers of selected sections"
 	OD_HELP               = "display help text and exit"
@@ -72,7 +75,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_PREFIX_DELIM       = "string to delimit a prefix"
 	OD_QUIET              = "suppress all normal output"
 	OD_SEPARATOR          = "print a separator line between sections"
-	OD_SEPARATOR_STRING   = "specify separator string"
+	OD_SEPARATOR_STRING   = "specify section separator string"
 	OD_STDIN_LABEL        = "label in place of file name for standard input"
 	OD_TAB_SIZE           = "number of characters between two tab stops"
 	OD_TOP_LEVEL          = "sections start from minimum indentation level"
@@ -116,12 +119,14 @@ type line_printer struct {
 	// values
 	file_header_prefix string
 	file_header_suffix string
+	file_separator_string string
 	filename           string
 	prefix_delim       string
 	separator_string   string
 	// features
 	begin         bool
 	file_header   bool
+	file_separator bool
 	line_number   bool
 	omit          bool
 	separator     bool
@@ -139,6 +144,12 @@ func (p *line_printer) print_line(l *[]byte, nr uint64, tr bool, is bool) (err e
 	if p.quiet || omit_selected || omit_unselected {
 		p.is_printing = false
 		return nil
+	}
+	if p.file_separator && !p.has_printed_file && p.has_printed {
+		_, err = os.Stdout.WriteString(p.file_separator_string + "\n")
+		if err != nil {
+			return
+		}
 	}
 	if p.file_header && !p.has_printed_file {
 		_, err = os.Stdout.WriteString(p.file_header_prefix +
@@ -732,6 +743,7 @@ func main() {
 	lp := line_printer{
 		file_header_prefix: DEF_FILE_HEADER_PREFIX,
 		file_header_suffix: DEF_FILE_HEADER_SUFFIX,
+		file_separator_string: DEF_FILE_SEPARATOR_STRING,
 		separator_string:   DEF_SEPARATOR,
 		filename:           "",
 	}
@@ -757,6 +769,10 @@ func main() {
 		DEF_FILE_HEADER_PREFIX, OD_FILE_HEADER_PREFIX)
 	flag.StringVar(&lp.file_header_suffix, "file-header-suffix",
 		DEF_FILE_HEADER_SUFFIX, OD_FILE_HEADER_SUFFIX)
+	flag.BoolVar(&lp.file_separator, "file-separator", false,
+		OD_FILE_SEPARATOR)
+	flag.StringVar(&lp.file_separator_string, "file-separator-string",
+		DEF_FILE_SEPARATOR_STRING, OD_FILE_SEPARATOR_STRING)
 	flag.BoolVar(&sp.fixed_string, "fixed-string", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.fixed_string, "F", false, OD_FIXED_STRING)
 	flag.BoolVar(&sp.headers, "headers", false, OD_HEADERS)

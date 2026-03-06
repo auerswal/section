@@ -225,6 +225,17 @@ after the file name with the
 .B \-\-file\-header
 option.
 .TP
+.SS \-\-file\-separator
+Print a separator line between output from different files.
+.TP
+.SS \-\-file\-separator\-string SEPARATOR
+Use the given
+.I SEPARATOR
+instead of the default of two ASCII percent sign characters
+.RB ( %% )
+when printing file separators.
+A newline is printed after the separator string.
+.TP
 .SS \-\-label LABEL
 Use
 .I LABEL
