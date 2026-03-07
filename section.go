@@ -88,18 +88,18 @@ There is NO WARRANTY, to the extent permitted by law.`
 // parameterize section algorithm
 type section_params struct {
 	// options
-	enclosing    bool
-	fixed_string bool
-	headers      bool
-	ignore_blank bool
-	ignore_case  bool
-	invert_match bool
-	omit_ignored bool
-	stdin_label  string
+	enclosing       bool
+	fixed_string    bool
+	headers         bool
+	ignore_blank    bool
+	ignore_case     bool
+	invert_match    bool
+	omit_ignored    bool
+	stdin_label     string
 	tab_is_n_spaces bool
-	tab_size     int
-	top_level    bool
-	yaml_ind     bool
+	tab_size        int
+	top_level       bool
+	yaml_ind        bool
 	// regular expressions matching indentation
 	ind_re *regexp.Regexp
 	// regular expression matching lines to ignore
