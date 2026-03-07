@@ -77,6 +77,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_SEPARATOR             = "print a separator line between sections"
 	OD_SEPARATOR_STRING      = "specify section separator string"
 	OD_STDIN_LABEL           = "label in place of file name for standard input"
+	OD_TAB_IS_N_SPACES       = "treat tab as a fixed number of space characters"
 	OD_TAB_SIZE              = "number of characters between two tab stops"
 	OD_TOP_LEVEL             = "sections start from minimum indentation level"
 	OD_WITH_FILENAME         = "prefix output lines with file name"
@@ -95,6 +96,7 @@ type section_params struct {
 	invert_match bool
 	omit_ignored bool
 	stdin_label  string
+	tab_is_n_spaces bool
 	tab_size     int
 	top_level    bool
 	yaml_ind     bool
@@ -616,7 +618,7 @@ func version() {
 }
 
 // compute indentation depth from indentation byte sequence
-func indentation_depth(in *[]byte, ts int) int {
+func indentation_depth(in *[]byte, ts int, tab_is_n_spaces bool) int {
 	if in == nil {
 		return 0
 	}
@@ -627,7 +629,11 @@ func indentation_depth(in *[]byte, ts int) int {
 	var c byte
 	for _, c = range *in {
 		if c == '\t' {
-			d += ts - (d % ts)
+			if tab_is_n_spaces {
+				d += ts
+			} else {
+				d += ts - (d % ts)
+			}
 		} else {
 			d++
 		}
@@ -667,7 +673,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 		}
 		// determine indentation depth of current line
 		li = p.ind_re.Find(l)
-		c_ind = indentation_depth(&li, p.tab_size)
+		c_ind = indentation_depth(&li, p.tab_size, p.tab_is_n_spaces)
 		// manage top level section status
 		if min_ind > -1 && c_ind <= min_ind {
 			// print a completed top level section
@@ -796,6 +802,8 @@ func main() {
 	flag.BoolVar(&lp.separator, "separator", false, OD_SEPARATOR)
 	flag.StringVar(&lp.separator_string, "separator-string", DEF_SEPARATOR,
 		OD_SEPARATOR_STRING)
+	flag.BoolVar(&sp.tab_is_n_spaces, "tab-is-n-spaces", false,
+		OD_TAB_IS_N_SPACES)
 	flag.IntVar(&sp.tab_size, "tab-size", 8, OD_TAB_SIZE)
 	flag.BoolVar(&sp.top_level, "top-level", false, OD_TOP_LEVEL)
 	flag.BoolVar(&lp.with_filename, "with-filename", false,

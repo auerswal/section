@@ -141,6 +141,21 @@ The
 .B \-\-yaml\-seq\-indent
 option overrides this.
 .TP
+.SS \-\-tab\-is\-n\-spaces
+Treat Tab characters as representing a fixed number of space characters
+instead of the number of space characters to reach the next tab stop.
+By default, each Tab character is treated as representing 8 space characters.
+The number of space characters per Tab character can be controlled using the
+.B \-\-tab\-size
+option.
+Using this option enables the same Tab character interpretation as used
+in the
+.B section
+implementation included in the
+.I Single File Tools
+.RI ( SFT )
+collection.
+.TP
 .SS \-\-tab\-size SIZE
 Tab characters inside the indentation increase the indentation depth to
 the value of the next tab stop.
@@ -368,4 +383,7 @@ There is NO WARRANTY, to the extent permitted by law.
 .UE ,
 .P
 .UR https://www.unix\-ag.uni\-kl.de/~auerswal/section/
+.UE
+.P
+.UR https://github.com/auerswal/sft
 .UE
