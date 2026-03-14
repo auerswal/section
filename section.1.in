@@ -20,6 +20,13 @@ is given), and prints the sections selected by matching lines
 together with the chosen section algorithm variant
 to standard output.
 .P
+Pattern matching compares the whole line with the
+.IR PATTERN ,
+including any indentation.
+If any part of the line matches the
+.IR PATTERN ,
+the line is matched.
+.P
 A section comprises all deeper indented lines directly following the
 starting line of the section.
 The starting line of a section can also be called the section
