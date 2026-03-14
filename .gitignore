@@ -9,3 +9,4 @@ section-?.??.?
 section-?.??.??
 tests/tests.log
 tests/*.out
+tests/*.err

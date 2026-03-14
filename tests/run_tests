@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # run_tests.sh - run a set of tests on a Unix filter
-# Copyright (C) 2021 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
+# Copyright (C) 2021-2026 Erik Auerswald <auerswal@unix-ag.uni-kl.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,6 +45,12 @@ output_differs() {
   diff -u "$@"
 }
 
+error_output_differs() {
+  printf -- '%s: unexpected error output:\n' "$1"
+  shift
+  diff -u "$@"
+}
+
 for T in *.opts; do
   NAME=${T%.opts}
   PAT="${NAME}.pat"
@@ -52,6 +58,8 @@ for T in *.opts; do
   MOREIN=( "${NAME}.in."* )
   OUT="${NAME}.out"
   EXP="${NAME}.exp"
+  ERR="${NAME}.err"
+  EXPERR="${NAME}.experr"
   # shellcheck disable=SC2015
   test -r "$PAT" && test -r "$IN" && test -r "$EXP" && test -r "${NAME}.ec" || {
     incomplete_test "$NAME"
@@ -60,7 +68,7 @@ for T in *.opts; do
   EXP_EC=$(< "${NAME}.ec")
   RES=0
   read -ra ARGS < <(cat "$T")
-  "$FILTER" "${ARGS[@]}" "$(< "$PAT")" "$IN" "${MOREIN[@]}" > "$OUT"
+  "$FILTER" "${ARGS[@]}" "$(< "$PAT")" "$IN" "${MOREIN[@]}" > "$OUT" 2> "$ERR"
   EC=$?
   test "$EC" -eq "$EXP_EC" || {
     wrong_exit_code "$NAME" "$EXP_EC" "$EC"
@@ -70,6 +78,17 @@ for T in *.opts; do
     output_differs "$NAME" "$EXP" "$OUT"
     RES=1
   }
+  if test -f "$EXPERR"; then
+    cmp >/dev/null 2>&1 "$EXPERR" "$ERR" || {
+      error_output_differs "$NAME" "$EXPERR" "$ERR"
+      RES=1
+    }
+  else
+    test -s "$ERR" && {
+      error_output_differs "$NAME" '/dev/null' "$ERR"
+      RES=1
+    }
+  fi
   if test "$RES" = 0; then
     printf -- '%s: PASS\n' "$NAME"
   else

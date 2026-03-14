@@ -5,7 +5,7 @@ MANSRC  := $(MAN).in
 MANWEB  := $(MAN).html
 TESTDIR := tests
 TESTBIN := $(TESTDIR)/run_tests
-TESTS   := $(wildcard $(TESTDIR)/*.ec $(TESTDIR)/*.exp $(TESTDIR)/*.in $(TESTDIR)/*.in.? $(TESTDIR)/*.opts $(TESTDIR)/*.pat)
+TESTS   := $(wildcard $(TESTDIR)/*.ec $(TESTDIR)/*.exp $(TESTDIR)/*.in $(TESTDIR)/*.in.? $(TESTDIR)/*.opts $(TESTDIR)/*.pat $(TESTDIR)/*.experr)
 HELPERS := generate_man_page_date.sh go.mod
 PREFIX  := /usr/local
 BINDIR  := $(PREFIX)/bin
@@ -55,7 +55,7 @@ tar: $(SRCDIR)
 clean:
 	$(RM) $(BINARY) $(MANWEB)
 	$(RM) -r $(SRCDIR)
-	$(RM) $(wildcard tests/*.out) tests/tests.log
+	$(RM) $(wildcard tests/*.out) $(wildcard tests/*.err) tests/tests.log
 
 distclean: clean
 	$(RM) $(MAN) $(wildcard $(BINARY)-*.*.*.tar.gz)
