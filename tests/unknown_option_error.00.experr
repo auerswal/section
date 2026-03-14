@@ -1,0 +1,4 @@
+flag provided but not defined: -unknown-option
+section: error: unknown option
+Usage: section [OPTION...] PATTERN [FILE...]
+Try 'section --help' for more information
