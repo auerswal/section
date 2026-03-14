@@ -49,8 +49,8 @@ Prerequisites
 - A Go compiler, e.g., GCC Go or the Go Tool.
   - The code only uses Go's standard library, no external dependencies.
 - A system sufficiently compatible to POSIX and GNU.
-- POSIX (or compatible) utilities: grep, printf, sh, sed, test
-- GNU (or compatible) utilities: date, gzip, install, make, tar
+- POSIX (or compatible) utilities: cmp, diff, exec, grep, printf, rm, sed, test
+- GNU (or compatible) utilities: bash, date, gzip, install, make, tar
 - To create an HTML version of the man page, you need a man utility that can
   produce HTML output.
 
