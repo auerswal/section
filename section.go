@@ -37,7 +37,6 @@ const (
 	// technical peculiarities
 	ARB_BUF_LIM = 512 * 1024 * 1024 // 512MiB
 	// internal regular expressions
-	IND_RE      = `^[ \t]*`
 	YAML_IND_RE = `^[ \t]*(- )*`
 	BLANK_RE    = `^[ \t]*$`
 	RE_IGN_CASE = `(?i)`
@@ -45,6 +44,7 @@ const (
 	DEF_FILE_HEADER_PREFIX    = "==> "
 	DEF_FILE_HEADER_SUFFIX    = " <=="
 	DEF_FILE_SEPARATOR_STRING = "%%"
+	DEF_IND_RE                = `^[ \t]*`
 	DEF_PREFIX_DELIM          = ":"
 	DEF_SEPARATOR             = "--"
 	DEF_STDIN_LABEL           = "(standard input)"
@@ -786,7 +786,7 @@ func main() {
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_blank, "ignore-blank", false, OD_IGNORE_BLANK)
 	flag.StringVar(&ignore_re, "ignore-re", "", OD_IGNORE_RE)
-	flag.StringVar(&indent_re, "indent-re", IND_RE, OD_INDENT_RE)
+	flag.StringVar(&indent_re, "indent-re", DEF_IND_RE, OD_INDENT_RE)
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
 	flag.StringVar(&sp.stdin_label, "label", DEF_STDIN_LABEL,
 		OD_STDIN_LABEL)
