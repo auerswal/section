@@ -66,6 +66,7 @@ There is NO WARRANTY, to the extent permitted by law.`
 	OD_HELP                  = "display help text and exit"
 	OD_IGNORE_BLANK          = "continue sections over blank lines"
 	OD_IGNORE_CASE           = "ignore case distinctions"
+	OD_IGNORE_PREFIX         = "ignore prefix matching regexp for indentation depth determination"
 	OD_IGNORE_RE             = "continue sections over lines matching regexp"
 	OD_INDENT_RE             = "regular expression defining indentation"
 	OD_INVERT_MATCH          = "match sections not starting with PATTERN"
@@ -100,6 +101,8 @@ type section_params struct {
 	tab_size        int
 	top_level       bool
 	yaml_ind        bool
+	// regular expression matching prefix in front of indentation
+	ignore_prefix_re *regexp.Regexp
 	// regular expression matching indentation
 	ind_re *regexp.Regexp
 	// regular expression matching lines to ignore
@@ -651,6 +654,7 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 	s_ind := -1        // indentation depth of current section
 	c_ind := -1        // indentation depth of current line
 	min_ind := -1      // minimal indentation level seen so far
+	ind_off := 0       // start of indentation offset
 	var buf []byte     // buffer space to hold input data
 	var l []byte       // one line of input data
 	var li []byte      // indentation bytes of the line
@@ -672,7 +676,14 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			continue
 		}
 		// determine indentation depth of current line
-		li = p.ind_re.Find(l)
+		if p.ignore_prefix_re != nil {
+			start_end := p.ignore_prefix_re.FindIndex(l)
+			// prefix must start at beginning of line
+			if start_end != nil && start_end[0] == 0 {
+				ind_off = start_end[1]
+			}
+		}
+		li = p.ind_re.Find(l[ind_off:])
 		c_ind = indentation_depth(&li, p.tab_size, p.tab_is_n_spaces)
 		// manage top level section status
 		if min_ind > -1 && c_ind <= min_ind {
@@ -767,7 +778,7 @@ func main() {
 	flag.BoolVar(&print_version, "version", false, OD_VERSION)
 	flag.BoolVar(&print_version, "V", false, OD_VERSION)
 	// modify section behavior
-	var ignore_re, indent_re string
+	var ignore_prefix_re, ignore_re, indent_re string
 	flag.BoolVar(&lp.begin, "begin", false, OD_BEGIN)
 	flag.BoolVar(&sp.enclosing, "enclosing", false, OD_ENCLOSING)
 	flag.BoolVar(&lp.file_header, "file-header", false, OD_FILE_HEADER)
@@ -785,6 +796,7 @@ func main() {
 	flag.BoolVar(&sp.ignore_blank, "ignore-blank", false, OD_IGNORE_BLANK)
 	flag.BoolVar(&sp.ignore_case, "ignore-case", false, OD_IGNORE_CASE)
 	flag.BoolVar(&sp.ignore_case, "i", false, OD_IGNORE_CASE)
+	flag.StringVar(&ignore_prefix_re, "ignore-prefix", "", OD_IGNORE_PREFIX)
 	flag.StringVar(&ignore_re, "ignore-re", "", OD_IGNORE_RE)
 	flag.StringVar(&indent_re, "indent-re", DEF_IND_RE, OD_INDENT_RE)
 	flag.BoolVar(&sp.invert_match, "invert-match", false, OD_INVERT_MATCH)
@@ -829,6 +841,16 @@ func main() {
 		if err != nil {
 			print_err(err)
 			usage_err(errors.New("invalid --ignore-re argument"))
+		}
+	}
+	if ignore_prefix_re != "" {
+		if ignore_prefix_re[0] != '^' {
+			ignore_prefix_re = "^" + ignore_prefix_re
+		}
+		sp.ignore_prefix_re = regexp.MustCompile(ignore_prefix_re)
+		if err != nil {
+			print_err(err)
+			usage_err(errors.New("invalid --ignore-prefix argument"))
 		}
 	}
 	if sp.yaml_ind {

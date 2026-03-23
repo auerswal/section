@@ -10,6 +10,8 @@ Version 0.??.? (????-??-??):
  * New option "--file-separator" to print a separator between output from
    different files.
  * New option "--file-separator-string" to control the file separator.
+ * New option "--ignore-prefix" to ignore a prefix for indentation
+   depth determination.
  * New option "--tab-is-n-spaces" to treat Tab characters as a fixed
    number of space characters
  * Documentation improvements.
