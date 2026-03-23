@@ -100,7 +100,7 @@ type section_params struct {
 	tab_size        int
 	top_level       bool
 	yaml_ind        bool
-	// regular expressions matching indentation
+	// regular expression matching indentation
 	ind_re *regexp.Regexp
 	// regular expression matching lines to ignore
 	ignore_re *regexp.Regexp
