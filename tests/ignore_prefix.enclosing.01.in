@@ -1,0 +1,17 @@
+Mar 25 16:04:28.759: FIBipv4-packet-proc: route packet from (local) src 192.0.2.1 dst 192.0.2.101
+Mar 25 16:04:28.759: FIBfwd-proc: packet routed by adj to Vlan123 192.0.2.101
+Mar 25 16:04:28.759: FIBipv4-packet-proc: packet routing succeeded
+Mar 25 16:04:28.759: IP: s=192.0.2.1 (local), d=192.0.2.101 (Vlan123), len 100, sending
+Mar 25 16:04:28.759:     ICMP type=8, code=0
+Mar 25 16:04:28.759: IP: s=192.0.2.1 (local), d=192.0.2.101 (Vlan123), len 100, sending full packet
+Mar 25 16:04:28.763:     ICMP type=8, code=0
+Mar 25 16:04:28.763: IP: s=192.0.2.101 (Vlan123), d=192.0.2.1, len 100, input feature
+Mar 25 16:04:28.763:     ICMP type=0, code=0, MCI Check(109), rtype 0, forus FALSE, sendself FALSE, mtu 0, fwdchk FALSE
+Mar 25 16:04:28.763: FIBipv4-packet-proc: route packet from Vlan123 src 192.0.2.101 dst 192.0.2.1
+Mar 25 16:04:28.763: FIBfwd-proc: Default:192.0.2.1/32 receive entry
+Mar 25 16:04:28.763: FIBipv4-packet-proc: packet routing failed
+Mar 25 16:04:28.763: IP: tableid=0, s=192.0.2.101 (Vlan123), d=192.0.2.1 (Vlan123), routed via RIB
+Mar 25 16:04:28.763: IP: s=192.0.2.101 (Vlan123), d=192.0.2.1 (Vlan123), len 100, rcvd 3
+Mar 25 16:04:28.763:     ICMP type=0, code=0
+Mar 25 16:04:28.763: IP: s=192.0.2.101 (Vlan123), d=192.0.2.1, len 100, stop process pak for forus packet
+Mar 25 16:04:28.763:     ICMP type=0, code=0

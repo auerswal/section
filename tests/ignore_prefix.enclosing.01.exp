@@ -1,0 +1,4 @@
+Mar 25 16:04:28.759: IP: s=192.0.2.1 (local), d=192.0.2.101 (Vlan123), len 100, sending
+Mar 25 16:04:28.759:     ICMP type=8, code=0
+Mar 25 16:04:28.759: IP: s=192.0.2.1 (local), d=192.0.2.101 (Vlan123), len 100, sending full packet
+Mar 25 16:04:28.763:     ICMP type=8, code=0
