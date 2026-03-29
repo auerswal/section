@@ -681,6 +681,8 @@ func section(p section_params, r io.Reader) (matched bool, err error) {
 			// prefix must start at beginning of line
 			if start_end != nil && start_end[0] == 0 {
 				ind_off = start_end[1]
+			} else {
+				ind_off = 0
 			}
 		}
 		li = p.ind_re.Find(l[ind_off:])
