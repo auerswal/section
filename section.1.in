@@ -141,9 +141,9 @@ of a line.
 Indentation depth determines which lines form a section.
 .TP
 .SS \-\-ignore\-prefix IGNORE_PREFIX_RE
-Ignore initial part (i.e., prefix) of line described by the regular expression
-.I IGNORE_PREFIX_RE
-when determining indentation depth.
+When determining indentation depth,
+ignore initial part (i.e., prefix) of line described by the regular expression
+.IR IGNORE_PREFIX_RE .
 .TP
 .SS \-\-indent\-re INDENT_RE
 Use non-default regular expression
