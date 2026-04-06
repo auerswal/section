@@ -1,7 +1,7 @@
 Noteworthy Changes in section Releases
 ======================================
 
-Version 0.??.? (????-??-??):
+Version 0.10.0 (2026-04-06):
 ----------------------------
  * New option "--file-header" to print a header showing the file name
    in front of the first output line from a file.
